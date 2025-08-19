@@ -9,11 +9,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Link from 'next/link';
-import { Eye, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Eye, Trash2, ChevronDown, ChevronUp, Hourglass } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 interface DashboardClientProps {
   interviews: FullInterview[];
@@ -157,21 +158,60 @@ export default function DashboardClient({ interviews: initialInterviews, allRole
                       <TableRow>
                           <TableCell colSpan={7} className="p-0">
                               <div className="p-4 bg-muted/50">
-                                  <Card>
-                                      <CardHeader>
-                                          <CardTitle>Interview Details</CardTitle>
-                                      </CardHeader>
-                                      <CardContent className="space-y-4">
-                                          {interview.responses.length > 0 ? interview.responses.map((response, index) => (
-                                              <div key={response.questionId} className="border-b pb-2 last:border-b-0">
-                                                  <p className="font-semibold">Q{index + 1}: {response.questionPrompt}</p>
-                                                  <p className="text-sm text-muted-foreground pl-4 pt-1 whitespace-pre-wrap">A: {response.transcript || "No transcript available."}</p>
-                                              </div>
-                                          )) : (
-                                              <p className="text-muted-foreground">No responses recorded for this interview.</p>
-                                          )}
-                                      </CardContent>
-                                  </Card>
+                                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                     <Card>
+                                        <CardHeader>
+                                            <CardTitle>Questions &amp; Answers</CardTitle>
+                                            <CardDescription>Transcribed responses from the candidate.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4 max-h-96 overflow-y-auto">
+                                            {interview.responses.length > 0 ? interview.responses.map((response, index) => (
+                                                <div key={response.questionId} className="border-b pb-2 last:border-b-0">
+                                                    <p className="font-semibold">Q{index + 1}: {response.questionPrompt}</p>
+                                                    <p className="text-sm text-muted-foreground pl-4 pt-1 whitespace-pre-wrap">A: {response.transcript || "No transcript available."}</p>
+                                                </div>
+                                            )) : (
+                                                <p className="text-muted-foreground">No responses recorded for this interview.</p>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>AI Performance Review</CardTitle>
+                                            <CardDescription>Summary of the candidate's performance.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            {interview.evaluation ? (
+                                                <>
+                                                    <div>
+                                                        <h4 className="font-semibold text-sm mb-1">Summary</h4>
+                                                        <p className="text-sm text-muted-foreground">{interview.evaluation.summary}</p>
+                                                    </div>
+                                                     <div>
+                                                        <h4 className="font-semibold text-sm mb-2">Strengths</h4>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {interview.evaluation.strengths.map(s => <Badge key={s} variant="secondary">{s}</Badge>)}
+                                                        </div>
+                                                    </div>
+                                                     <div>
+                                                        <h4 className="font-semibold text-sm mb-2">Weaknesses</h4>
+                                                         <div className="flex flex-wrap gap-2">
+                                                            {interview.evaluation.weaknesses.map(w => <Badge key={w} variant="destructive">{w}</Badge>)}
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <Alert>
+                                                    <Hourglass className="h-4 w-4" />
+                                                    <AlertTitle>Evaluation Pending</AlertTitle>
+                                                    <AlertDescription>
+                                                        The AI evaluation is not yet complete for this interview.
+                                                    </AlertDescription>
+                                                </Alert>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                  </div>
                               </div>
                           </TableCell>
                       </TableRow>
