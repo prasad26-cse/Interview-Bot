@@ -1,8 +1,9 @@
 
 "use server";
 import { generateInterviewQuestions } from "@/ai/flows/generate-interview-questions";
-import type { InterviewData, Role } from "@/lib/types";
-import { roles } from "./data";
+import { evaluateCandidateResponses, type EvaluateCandidateResponsesInput } from "@/ai/flows/evaluate-candidate-responses";
+import type { InterviewData, Role, FullInterview, User, Response, Question } from "@/lib/types";
+import { roles, interviews, users } from "./data";
 
 
 export async function createInterview(
@@ -44,4 +45,88 @@ export async function createInterview(
       ],
     };
   }
+}
+
+interface SubmitInterviewInput {
+  interviewId: string;
+  role: Role;
+  questions: Question[];
+  responses: {
+    questionId: string;
+    transcript: string;
+    videoUrl: string; // This would be a real URL after upload
+    duration_sec: number;
+  }[];
+  candidate: User;
+}
+
+export async function submitAndEvaluateInterview(input: SubmitInterviewInput): Promise<string> {
+    const { role, questions, responses, candidate } = input;
+
+    const evaluationInput: EvaluateCandidateResponsesInput = {
+        role: role.title,
+        description: role.description,
+        questions: questions,
+        responses: responses.map(r => ({
+            question_id: r.questionId,
+            video_url: r.videoUrl, // Passing placeholder URL
+            duration_sec: r.duration_sec,
+            transcript: r.transcript,
+        })),
+    };
+
+    try {
+        const evaluationResult = await evaluateCandidateResponses(evaluationInput);
+
+        const newInterview: FullInterview = {
+            id: input.interviewId,
+            roleId: role.id,
+            role: role,
+            candidate: candidate,
+            status: 'scored',
+            createdAt: new Date().toISOString(),
+            submittedAt: new Date().toISOString(),
+            evaluation: {
+                overallScore: evaluationResult.evaluation.overall_score,
+                summary: evaluationResult.evaluation.summary,
+                strengths: evaluationResult.evaluation.strengths,
+                weaknesses: evaluationResult.evaluation.weaknesses,
+                skills: evaluationResult.evaluation.skills,
+            },
+            responses: responses.map((r, index) => ({
+                questionId: r.questionId,
+                // In a real app, you would have the prompt from the question object
+                questionPrompt: questions.find(q => q.index.toString() === r.questionId)?.prompt || "Unknown Question",
+                videoUrl: r.videoUrl,
+                transcript: r.transcript,
+            })),
+        };
+        
+        // Save the new interview to our mock data
+        interviews.unshift(newInterview);
+        
+        return newInterview.id;
+
+    } catch (error) {
+        console.error("Error during interview evaluation:", error);
+        // Fallback for demo: save without evaluation
+        const newInterview: FullInterview = {
+            id: input.interviewId,
+            roleId: role.id,
+            role: role,
+            candidate: candidate,
+            status: 'submitted', // Mark as submitted but not scored
+            createdAt: new Date().toISOString(),
+            submittedAt: new Date().toISOString(),
+            evaluation: null,
+            responses: responses.map((r, index) => ({
+                questionId: r.questionId,
+                questionPrompt: questions.find(q => q.index.toString() === r.questionId)?.prompt || "Unknown Question",
+                videoUrl: r.videoUrl,
+                transcript: r.transcript,
+            })),
+        };
+        interviews.unshift(newInterview);
+        return newInterview.id;
+    }
 }

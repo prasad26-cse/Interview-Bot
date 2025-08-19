@@ -4,18 +4,19 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
-import { Circle, Square, RefreshCw, Upload, AlertTriangle, VideoOff } from "lucide-react";
+import { Circle, Square, RefreshCw, Upload, AlertTriangle, VideoOff, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
 interface VideoRecProps {
-  onSubmit: (blob: Blob) => void;
+  onSubmit: (blob: Blob, duration: number) => void;
+  isProcessing: boolean;
 }
 
 const MAX_DURATION_S = 180; // 3 minutes
 const MAX_RETAKES = 2;
 
-export default function VideoRec({ onSubmit }: VideoRecProps) {
+export default function VideoRec({ onSubmit, isProcessing }: VideoRecProps) {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [status, setStatus] = useState<'idle' | 'recording' | 'preview'>('idle');
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -27,6 +28,7 @@ export default function VideoRec({ onSubmit }: VideoRecProps) {
   const recordedChunksRef = useRef<Blob[]>([]);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const recordingStartRef = useRef<number>(0);
 
   const { toast } = useToast();
 
@@ -42,7 +44,6 @@ export default function VideoRec({ onSubmit }: VideoRecProps) {
   useEffect(() => {
     const getCameraPermission = async () => {
       try {
-        // Request both video and audio
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         streamRef.current = stream;
         setHasCameraPermission(true);
@@ -65,7 +66,6 @@ export default function VideoRec({ onSubmit }: VideoRecProps) {
     getCameraPermission();
 
     return () => {
-      // Stop all tracks when component unmounts
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
@@ -108,6 +108,7 @@ export default function VideoRec({ onSubmit }: VideoRecProps) {
         
         recorder.start();
         setStatus('recording');
+        recordingStartRef.current = Date.now();
         setCountdown(MAX_DURATION_S);
         countdownIntervalRef.current = setInterval(() => {
             setCountdown(prev => {
@@ -134,7 +135,6 @@ export default function VideoRec({ onSubmit }: VideoRecProps) {
       setVideoUrl(null);
       setStatus('idle');
        if (videoRef.current && streamRef.current) {
-          // Re-attach live stream for preview
           videoRef.current.srcObject = streamRef.current;
         }
     } else {
@@ -149,7 +149,8 @@ export default function VideoRec({ onSubmit }: VideoRecProps) {
   const handleSubmit = async () => {
       if(videoUrl) {
         const blob = await fetch(videoUrl).then(r => r.blob())
-        onSubmit(blob);
+        const duration = Math.round((Date.now() - recordingStartRef.current) / 1000);
+        onSubmit(blob, duration);
       }
   }
 
@@ -163,7 +164,6 @@ export default function VideoRec({ onSubmit }: VideoRecProps) {
     <Card className="h-full">
       <CardContent className="p-4 h-full flex flex-col items-center justify-center">
         <div className="w-full aspect-video bg-black rounded-lg overflow-hidden relative flex items-center justify-center">
-            {/* Always render video tag to attach stream */}
             <video 
               ref={videoRef} 
               autoPlay 
@@ -207,12 +207,15 @@ export default function VideoRec({ onSubmit }: VideoRecProps) {
 
         <div className="w-full mt-4 flex flex-col sm:flex-row justify-between items-center gap-2">
             <div>
-              {status === 'idle' && <Button onClick={startRecording} size="lg" disabled={!hasCameraPermission}><Circle className="mr-2 h-4 w-4" /> Start Recording</Button>}
-              {status === 'recording' && <Button onClick={stopRecording} variant="destructive" size="lg"><Square className="mr-2 h-4 w-4" /> Stop Recording</Button>}
+              {status === 'idle' && <Button onClick={startRecording} size="lg" disabled={!hasCameraPermission || isProcessing}><Circle className="mr-2 h-4 w-4" /> Start Recording</Button>}
+              {status === 'recording' && <Button onClick={stopRecording} variant="destructive" size="lg" disabled={isProcessing}><Square className="mr-2 h-4 w-4" /> Stop Recording</Button>}
               {status === 'preview' && (
                   <div className="flex gap-2">
-                    <Button onClick={handleRetake} variant="secondary" disabled={retakes >= MAX_RETAKES}><RefreshCw className="mr-2 h-4 w-4" /> Retake ({MAX_RETAKES - retakes} left)</Button>
-                    <Button onClick={handleSubmit}><Upload className="mr-2 h-4 w-4" /> Submit Answer</Button>
+                    <Button onClick={handleRetake} variant="secondary" disabled={retakes >= MAX_RETAKES || isProcessing}><RefreshCw className="mr-2 h-4 w-4" /> Retake ({MAX_RETAKES - retakes} left)</Button>
+                    <Button onClick={handleSubmit} disabled={isProcessing}>
+                        {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                        Submit Answer
+                    </Button>
                   </div>
               )}
             </div>
