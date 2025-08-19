@@ -9,6 +9,7 @@ import LlmIntro from "./llm-intro";
 import { Button } from "./ui/button";
 import QuestionCard from "./question-card";
 import VideoRec from "./video-rec";
+import { ArrowRight } from "lucide-react";
 
 interface InterviewPlayerProps {
   interviewData: InterviewData;
@@ -60,29 +61,37 @@ export default function InterviewPlayer({ interviewData }: InterviewPlayerProps)
           )}
 
           {currentQuestion && (
-            <div className="flex flex-col lg:flex-row gap-8">
-              <div className="space-y-6 lg:w-1/2">
-                <QuestionCard
-                  question={currentQuestion}
-                  currentNum={currentStep}
-                  totalNum={interviewData.questions.length}
-                />
-                 <div className="p-4 bg-accent/50 dark:bg-accent/20 border border-dashed rounded-lg">
-                    <h3 className="font-semibold mb-2 text-foreground/80">Tips for a Great Answer</h3>
-                    <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                        <li>Take a moment to think before you speak.</li>
-                        <li>Structure your answer (e.g., STAR method for behavioral questions).</li>
-                        <li>Be concise and to the point.</li>
-                        <li>Speak clearly into your microphone.</li>
-                    </ul>
+            <div>
+              <div className="flex flex-col lg:flex-row gap-8">
+                <div className="space-y-6 lg:w-1/2">
+                  <QuestionCard
+                    question={currentQuestion}
+                    currentNum={currentStep}
+                    totalNum={interviewData.questions.length}
+                  />
+                   <div className="p-4 bg-primary/10 dark:bg-primary/20 border border-dashed rounded-lg">
+                      <h3 className="font-semibold mb-2 text-primary/80">Tips for a Great Answer</h3>
+                      <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                          <li>Take a moment to think before you speak.</li>
+                          <li>Structure your answer (e.g., STAR method for behavioral questions).</li>
+                          <li>Be concise and to the point.</li>
+                          <li>Speak clearly into your microphone.</li>
+                      </ul>
+                  </div>
+                </div>
+
+                <div className="lg:w-1/2">
+                  <VideoRec 
+                    key={currentStep}
+                    onSubmit={handleVideoSubmit} 
+                  />
                 </div>
               </div>
-
-              <div className="lg:w-1/2">
-                <VideoRec 
-                  key={currentStep}
-                  onSubmit={handleVideoSubmit} 
-                />
+              <div className="mt-8 flex justify-end">
+                <Button onClick={handleNext} variant="outline">
+                  {currentStep < interviewData.questions.length ? 'Next Question' : 'Finish Interview'}
+                  <ArrowRight />
+                </Button>
               </div>
             </div>
           )}
