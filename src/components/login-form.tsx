@@ -42,11 +42,7 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
       setError("This login is for candidates. Please use the recruiter login page.");
     } else {
       localStorage.setItem('user', JSON.stringify(user));
-      if (user.role === 'recruiter') {
-        router.push('/dashboard');
-      } else {
-        router.push('/start');
-      }
+      router.push('/home');
       router.refresh();
     }
     

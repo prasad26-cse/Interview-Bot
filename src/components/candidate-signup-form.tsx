@@ -45,7 +45,7 @@ export default function CandidateSignupForm() {
         // Simulate login
         localStorage.setItem('user', JSON.stringify(newUser));
 
-        router.push('/start');
+        router.push('/home');
         router.refresh();
        
         setLoading(false);

@@ -45,7 +45,7 @@ export default function RecruiterSignupForm() {
         
         localStorage.setItem('user', JSON.stringify(newUser));
 
-        router.push('/dashboard');
+        router.push('/home');
         router.refresh();
        
         setLoading(false);
