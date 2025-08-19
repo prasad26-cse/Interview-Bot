@@ -2,6 +2,7 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserPlus } from "lucide-react";
 import SignupForm from "@/components/signup-form";
+import ClientOnly from "@/components/client-only";
 
 export default function SignupPage() {
   return (
@@ -16,7 +17,9 @@ export default function SignupPage() {
               Sign up to start managing your interviews
             </CardDescription>
           </CardHeader>
-          <SignupForm />
+          <ClientOnly>
+            <SignupForm />
+          </ClientOnly>
       </Card>
     </div>
   );
