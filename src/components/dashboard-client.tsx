@@ -11,7 +11,6 @@ import Link from 'next/link';
 import { Eye, Trash2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 interface DashboardClientProps {
   interviews: Interview[];
@@ -23,7 +22,6 @@ export default function DashboardClient({ interviews: initialInterviews, allRole
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const { toast } = useToast();
-  const supabase = getSupabaseBrowserClient();
 
   const filteredInterviews = useMemo(() => {
     return interviews.filter((interview) => {
@@ -36,23 +34,12 @@ export default function DashboardClient({ interviews: initialInterviews, allRole
   const getRoleTitle = (roleId: string) => allRoles.find(r => r.id === roleId)?.title || 'Unknown Role';
 
   const handleDelete = async (interviewId: string) => {
-    try {
-        const { error } = await supabase.from('interviews').delete().match({ id: interviewId });
-        if (error) throw error;
-
-        setInterviews(interviews.filter(i => i.id !== interviewId));
-        toast({
-            title: "Success",
-            description: "Interview record deleted successfully.",
-        });
-    } catch (error: any) {
-        console.error("Error deleting document: ", error);
-        toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to delete the interview record.",
-        });
-    }
+    // This is a mock delete. In a real app, this would be a database call.
+    setInterviews(interviews.filter(i => i.id !== interviewId));
+    toast({
+        title: "Success",
+        description: "Interview record deleted successfully (mock).",
+    });
   };
 
   return (

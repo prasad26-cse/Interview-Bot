@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { users } from "@/lib/data";
 
 interface LoginFormProps {
   recruiterOnly?: boolean;
@@ -22,69 +22,35 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  // Use the shared Supabase client
-  const supabase = getSupabaseBrowserClient();
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+    const user = users.find(u => u.email === email);
 
-      if (signInError) {
-        if (signInError.message.includes('Invalid login credentials')) {
-             setError("Invalid email or password. Please try again.");
-        } else {
-            setError(signInError.message);
-        }
+    if (!user) {
+        setError("Invalid email or password.");
         setLoading(false);
         return;
-      }
-      
-      const user = data.user;
-      if (!user) throw new Error("Login failed, user not found.");
-
-      // Get user role from profiles table
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-      
-      if (profileError || !profileData) {
-          setError("User data not found. Please contact support.");
-          await supabase.auth.signOut();
-          setLoading(false);
-          return;
-      }
-      
-      const userRole = profileData.role;
-
-      if (recruiterOnly && userRole !== 'recruiter') {
-        setError("This login is for recruiters only.");
-        await supabase.auth.signOut();
-      } else if (!recruiterOnly && userRole === 'recruiter') {
-        setError("This login is for candidates. Please use the recruiter login page.");
-        await supabase.auth.signOut();
-      } else {
-        // Successful login
-        if (userRole === 'recruiter') {
-          router.push('/dashboard');
-        } else {
-          router.push('/start');
-        }
-        router.refresh();
-      }
-    } catch (error: any) {
-        setError(error.message);
-    } finally {
-      setLoading(false);
     }
+
+    if (recruiterOnly && user.role !== 'recruiter') {
+      setError("This login is for recruiters only.");
+    } else if (!recruiterOnly && user.role === 'recruiter') {
+      setError("This login is for candidates. Please use the recruiter login page.");
+    } else {
+      localStorage.setItem('user', JSON.stringify(user));
+      if (user.role === 'recruiter') {
+        router.push('/dashboard');
+      } else {
+        router.push('/start');
+      }
+      router.refresh();
+    }
+    
+    setLoading(false);
   };
 
   const signupLink = recruiterOnly ? "/signup/recruiter" : "/signup/candidate";

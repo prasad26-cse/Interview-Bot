@@ -1,51 +1,19 @@
 
 import ReportView from "@/components/report-view";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import type { FullInterview, Interview, Role } from "@/lib/types";
+import type { FullInterview } from "@/lib/types";
+import { interviews } from "@/lib/data";
 
 async function getInterviewDetails(id: string): Promise<FullInterview | null> {
-    const supabase = createClient();
+    // In a real app, this would be a database call.
+    // Here we find the interview in our mock data.
+    const interview = interviews.find(i => i.id === id);
     
-    const { data, error } = await supabase
-        .from('interviews')
-        .select(`
-            *,
-            role:roles(*),
-            candidate:profiles(*)
-        `)
-        .eq('id', id)
-        .single();
-    
-    if (error || !data) {
-        console.error("Error fetching interview details:", error);
+    if (!interview) {
         return null;
     }
 
-    const interviewData = data as any;
-
-    return {
-        id: interviewData.id,
-        roleId: interviewData.roleId,
-        status: interviewData.status,
-        createdAt: interviewData.created_at,
-        submittedAt: interviewData.submitted_at,
-        evaluation: interviewData.evaluation,
-        responses: interviewData.responses,
-        role: {
-            id: interviewData.role.id,
-            title: interviewData.role.title,
-            slug: interviewData.role.slug,
-            description: interviewData.role.description,
-        },
-        candidate: {
-            id: interviewData.candidate.id,
-            name: interviewData.candidate.full_name,
-            email: interviewData.candidate.email,
-            role: interviewData.candidate.role,
-            avatarUrl: interviewData.candidate.avatar_url,
-        }
-    }
+    return interview as FullInterview;
 }
 
 

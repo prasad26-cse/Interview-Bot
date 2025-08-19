@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { AlertTriangle } from "lucide-react";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { users, type User } from "@/lib/data";
 
 export default function CandidateSignupForm() {
     const [email, setEmail] = useState('');
@@ -19,52 +19,34 @@ export default function CandidateSignupForm() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-    // Use the shared Supabase client
-    const supabase = getSupabaseBrowserClient();
 
     const handleSignup = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
         
-        const { data, error: signUpError } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: {
-                    full_name: name,
-                },
-            },
-        });
-        
-        if (signUpError) {
-            if (signUpError.message.includes('User already registered')) {
-                setError('This email is already in use. Please use a different email.');
-            } else if (signUpError.message.includes('Password should be at least 6 characters')) {
-                 setError('The password is too weak. Please use a stronger password (at least 6 characters).');
-            } else {
-                setError(signUpError.message);
-            }
+        const existingUser = users.find(u => u.email === email);
+        if (existingUser) {
+            setError("An account with this email already exists. Please login.");
             setLoading(false);
             return;
         }
 
-        if (data.user) {
-             const { error: profileError } = await supabase.from('profiles').insert({
-                id: data.user.id,
-                full_name: name,
-                email: email,
-                role: 'candidate'
-             });
+        const newUser: User = {
+            id: `user_${Date.now()}`,
+            name,
+            email,
+            role: 'candidate',
+            avatarUrl: `https://i.pravatar.cc/150?u=${email}`
+        };
+        
+        users.push(newUser);
+        
+        // Simulate login
+        localStorage.setItem('user', JSON.stringify(newUser));
 
-            if (profileError) {
-                setError(profileError.message);
-                await supabase.auth.signOut();
-            } else {
-                 router.push('/start');
-                 router.refresh();
-            }
-        }
+        router.push('/start');
+        router.refresh();
        
         setLoading(false);
     };

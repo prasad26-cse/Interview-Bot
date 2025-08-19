@@ -3,22 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { roles } from "@/lib/data";
 import type { Role } from "@/lib/types";
 
-async function getRoles() {
-    const supabase = createClient();
-    const { data, error } = await supabase.from('roles').select('*');
-    
-    if (error) {
-        console.error("Error fetching roles:", error);
-        return [];
-    }
-    return data as Role[];
+async function getRoles(): Promise<Role[]> {
+    // In a real app, this would fetch from a database.
+    // For now, we return our mock data.
+    return roles;
 }
 
 export default async function StartPage() {
-  const roles = await getRoles();
+  const availableRoles = await getRoles();
 
   return (
     <div className="container mx-auto py-12 md:py-20">
@@ -27,7 +22,7 @@ export default async function StartPage() {
         <p className="mt-2 text-lg text-muted-foreground">Select the position you are applying for to begin your tailored interview.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {roles.map((role) => (
+        {availableRoles.map((role) => (
           <Card key={role.id} className="flex flex-col hover:border-primary transition-colors">
             <CardHeader>
               <CardTitle className="text-2xl">{role.title}</CardTitle>

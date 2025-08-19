@@ -6,39 +6,34 @@ import { Button } from "./ui/button";
 import { Bot, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
+import type { User } from "@/lib/types";
 
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  // Use the shared Supabase client
-  const supabase = getSupabaseBrowserClient();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    // Check initial session
-    const checkUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user);
-      setLoading(false);
+    // This is a simple way to check for a logged-in user in a mock setup.
+    // In a real app with Supabase/Firebase, this would involve onAuthStateChange.
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (error) {
+      console.error("Failed to parse user from localStorage", error)
+    } finally {
+        setLoading(false);
     }
-    checkUser();
-
-    return () => {
-      subscription?.unsubscribe();
-    };
-  }, [supabase.auth, router]);
+  }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    localStorage.removeItem('user');
+    setUser(null);
     router.push('/');
-    router.refresh(); // to ensure server components re-render
+    // Use window.location to force a full refresh, ensuring all state is cleared.
+    window.location.href = '/';
   };
   
   const isLoggedIn = !!user;

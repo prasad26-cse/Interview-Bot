@@ -2,26 +2,20 @@
 "use server";
 import { generateInterviewQuestions } from "@/ai/flows/generate-interview-questions";
 import type { InterviewData, Role } from "@/lib/types";
-import { createClient } from "./supabase/server";
+import { roles } from "./data";
+
 
 export async function createInterview(
   roleSlug: string
 ): Promise<InterviewData | null> {
     
-  const supabase = createClient();
-  const { data: roleData, error: roleError } = await supabase
-    .from('roles')
-    .select('*')
-    .eq('slug', roleSlug)
-    .single();
+  const role = roles.find(r => r.slug === roleSlug);
 
-  if (roleError || !roleData) {
-    console.error("Error fetching role:", roleError);
+  if (!role) {
+    console.error("Role not found:", roleSlug);
     return null;
   }
-  const role: Role = roleData;
-
-
+  
   try {
     const interviewContent = await generateInterviewQuestions({
       role: role.title,
