@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { Interview, Role } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +22,10 @@ export default function DashboardClient({ interviews: initialInterviews, allRole
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const { toast } = useToast();
+  
+  useEffect(() => {
+    setInterviews(initialInterviews);
+  }, [initialInterviews]);
 
   const filteredInterviews = useMemo(() => {
     return interviews.filter((interview) => {
