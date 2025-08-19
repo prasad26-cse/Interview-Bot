@@ -5,11 +5,18 @@ import { evaluateCandidateResponses, type EvaluateCandidateResponsesInput } from
 import type { InterviewData, Role, FullInterview, User, Response, Question } from "@/lib/types";
 import { roles, interviews } from "./data";
 
+// DEV NOTE: To connect a real database, a developer would:
+// 1. Set the DATABASE_URL in the .env file.
+// 2. Run `npx prisma db push` to sync the schema with the database.
+// 3. Replace the mock data imports and logic below with Prisma client queries.
+// Example: import prisma from './db';
 
 export async function createInterview(
   roleSlug: string
 ): Promise<InterviewData | null> {
     
+  // DEV NOTE: Replace this mock data fetch with a Prisma query.
+  // Example: const role = await prisma.role.findUnique({ where: { slug: roleSlug } });
   const role = roles.find(r => r.slug === roleSlug);
 
   if (!role) {
@@ -101,7 +108,8 @@ export async function submitAndEvaluateInterview(input: SubmitInterviewInput): P
             })),
         };
         
-        // Save the new interview to our mock data
+        // DEV NOTE: Replace this mock data push with a Prisma query.
+        // Example: const savedInterview = await prisma.interview.create({ data: ... });
         interviews.unshift(newInterview);
         
         return newInterview.id;
@@ -125,6 +133,8 @@ export async function submitAndEvaluateInterview(input: SubmitInterviewInput): P
                 transcript: r.transcript,
             })),
         };
+
+        // DEV NOTE: Replace this mock data push with a Prisma query.
         interviews.unshift(newInterview);
         return newInterview.id;
     }
