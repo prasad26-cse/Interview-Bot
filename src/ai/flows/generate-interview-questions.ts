@@ -2,7 +2,7 @@
 'use server';
 
 /**
- * @fileOverview This file defines a Genkit flow for generating dynamic, role-relevant interview questions.
+ * @fileOverview This file defines a Genkit flow for generating dynamic, role-relevant interview questions and a greeting.
  *
  * It includes:
  * - generateInterviewQuestions - A function to generate interview questions based on role information.
@@ -36,18 +36,18 @@ export async function generateInterviewQuestions(input: GenerateInterviewQuestio
   return generateInterviewQuestionsFlow(input);
 }
 
-const questionGeneratorPrompt = ai.definePrompt({
-  name: 'questionGeneratorPrompt',
+const interviewGeneratorPrompt = ai.definePrompt({
+  name: 'interviewGeneratorPrompt',
   input: {schema: GenerateInterviewQuestionsInputSchema},
   output: {schema: GeneratedInterviewQuestionsOutputSchema},
-  prompt: `You are a seasoned technical interviewer. Given a ROLE and DESCRIPTION, produce 5-7 interview questions mixing behavioral and technical, ordered easy→hard. Each item: {index, prompt, category, difficulty(1-5)}. Keep prompts concise and unambiguous.\n\nROLE: {{{role}}}\nDESCRIPTION: {{{description}}}`,
-});
+  prompt: `You are a friendly but professional technical interviewer. Given a ROLE and DESCRIPTION, produce:
+1. A warm, 2-3 sentence greeting that sets expectations and encourages thoughtful answers.
+2. 5-7 interview questions mixing behavioral and technical, ordered easy to hard.
 
-const greetingGeneratorPrompt = ai.definePrompt({
-  name: 'greetingGeneratorPrompt',
-  input: {schema: GenerateInterviewQuestionsInputSchema},
-  output: {schema: z.string().describe('A role-specific greeting for the candidate.')},
-  prompt: `You are a friendly recruiter. Write a 2-3 sentence, role-specific greeting that sets expectations and encourages thoughtful answers. Tone: warm, clear, professional.\n\nROLE: {{{role}}}\nDESCRIPTION: {{{description}}}`, 
+For each question, provide: {index, prompt, category, difficulty(1-5)}. Keep prompts concise and unambiguous.
+
+ROLE: {{{role}}}
+DESCRIPTION: {{{description}}}`,
 });
 
 const generateInterviewQuestionsFlow = ai.defineFlow(
@@ -57,14 +57,7 @@ const generateInterviewQuestionsFlow = ai.defineFlow(
     outputSchema: GeneratedInterviewQuestionsOutputSchema,
   },
   async input => {
-    const [questionsResponse, greetingResponse] = await Promise.all([
-      questionGeneratorPrompt(input),
-      greetingGeneratorPrompt(input),
-    ]);
-
-    return {
-      questions: questionsResponse.output!.questions,
-      greeting: greetingResponse.output!,
-    };
+    const { output } = await interviewGeneratorPrompt(input);
+    return output!;
   }
 );

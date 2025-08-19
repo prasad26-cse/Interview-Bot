@@ -13,7 +13,7 @@ export async function createInterview(
   }
 
   try {
-    const { questions, greeting } = await generateInterviewQuestions({
+    const interviewContent = await generateInterviewQuestions({
       role: role.title,
       description: role.description,
     });
@@ -21,8 +21,8 @@ export async function createInterview(
     return {
       id: `interview_${role.id}_${Date.now()}`,
       role: role,
-      greeting: greeting,
-      questions: questions.sort((a, b) => a.index - b.index),
+      greeting: interviewContent.greeting,
+      questions: interviewContent.questions.sort((a, b) => a.index - b.index),
     };
   } catch (error) {
     console.error("Failed to generate interview questions:", error);
