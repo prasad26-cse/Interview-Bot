@@ -53,6 +53,8 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
     }
   };
 
+  const signupLink = recruiterOnly ? "/signup/recruiter" : "/signup/candidate";
+
   return (
     <form onSubmit={handleLogin}>
       <CardContent className="grid gap-4">
@@ -89,7 +91,7 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
         <Button type="submit" className="w-full">Login</Button>
         <p className="text-sm text-muted-foreground">
           Don't have an account?{" "}
-          <Link href="/signup" className="text-primary hover:underline">
+          <Link href={signupLink} className="text-primary hover:underline">
             Create one
           </Link>
         </p>
