@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -12,8 +13,8 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateRoleSpecificGreetingInputSchema = z.object({
-  roleTitle: z.string().describe('The title of the role.'),
-  roleDescription: z.string().describe('The description of the role.'),
+  role: z.string().describe('The title of the role.'),
+  description: z.string().describe('The description of the role.'),
 });
 export type GenerateRoleSpecificGreetingInput = z.infer<
   typeof GenerateRoleSpecificGreetingInputSchema
@@ -36,7 +37,7 @@ const prompt = ai.definePrompt({
   name: 'generateRoleSpecificGreetingPrompt',
   input: {schema: GenerateRoleSpecificGreetingInputSchema},
   output: {schema: GenerateRoleSpecificGreetingOutputSchema},
-  prompt: `You are a friendly recruiter. Write a 2–3 sentence, role‑specific greeting that sets expectations and encourages thoughtful answers. Tone: warm, clear, professional.\n\nROLE: {{{roleTitle}}}\nDESCRIPTION: {{{roleDescription}}}`,
+  prompt: `You are a friendly recruiter. Write a 2–3 sentence, role‑specific greeting that sets expectations and encourages thoughtful answers. Tone: warm, clear, professional.\n\nROLE: {{{role}}}\nDESCRIPTION: {{{description}}}`,
 });
 
 const generateRoleSpecificGreetingFlow = ai.defineFlow(
