@@ -72,9 +72,6 @@ export default function Header() {
             </>
           ) : (
             <>
-               <Button asChild disabled>
-                <Link href="/start">Start Interview</Link>
-               </Button>
                <Button asChild>
                 <Link href="/login/recruiter">Recruiter Login</Link>
               </Button>
