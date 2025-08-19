@@ -9,15 +9,26 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import type { User } from "@/lib/types";
+import { users } from "@/lib/data";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 export default function SignupForm() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
+    const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
     const handleSignup = (e: FormEvent) => {
         e.preventDefault();
+        
+        const existingUser = users.find(u => u.email === email);
+        if (existingUser) {
+            setError("An account with this email already exists. Please use a different email or log in.");
+            return;
+        }
+
         // In a real app, you would:
         // 1. Call a server action to create the user in the database.
         // 2. Handle potential errors (e.g., email already exists).
@@ -29,15 +40,27 @@ export default function SignupForm() {
           role: 'recruiter'
         }
         console.log('New user created (simulation):', newUser);
+        
+        // In a real app, you'd add the user to the database.
+        // For this demo, we can just proceed as if it's done.
+
         localStorage.setItem('user', JSON.stringify(newUser));
-        // For this demo, we'll just redirect to the dashboard to simulate auto-login.
         router.push('/dashboard');
-        router.refresh();
+        // We use window.location.reload() to force a full page reload,
+        // which ensures the header state is correctly updated.
+        window.location.reload();
     };
 
   return (
     <form onSubmit={handleSignup}>
         <CardContent className="grid gap-4">
+            {error && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Signup Failed</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
            <div className="grid gap-2">
             <Label htmlFor="name">Full Name</Label>
             <Input 
