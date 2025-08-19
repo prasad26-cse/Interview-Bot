@@ -30,8 +30,11 @@ export async function createInterview(
       description: role.description,
     });
 
+    // Added Math.random() to ensure unique IDs even if created at the same millisecond
+    const uniqueId = `interview_${role.id}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+
     return {
-      id: `interview_${role.id}_${Date.now()}`,
+      id: uniqueId,
       role: role,
       greeting: interviewContent.greeting,
       questions: interviewContent.questions.sort((a, b) => a.index - b.index),
@@ -39,8 +42,9 @@ export async function createInterview(
   } catch (error) {
     console.error("Failed to generate interview questions:", error);
     // Return a fallback for demonstration purposes
+    const uniqueId = `interview_${role.id}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     return {
-      id: `interview_${role.id}_${Date.now()}`,
+      id: uniqueId,
       role: role,
       greeting: `Welcome to your interview for the ${role.title} position! We're excited to learn more about you. Please take your time to provide thoughtful answers to the following questions.`,
       questions: [
