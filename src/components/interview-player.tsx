@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { InterviewData, Question } from "@/lib/types";
@@ -59,8 +60,8 @@ export default function InterviewPlayer({ interviewData }: InterviewPlayerProps)
           )}
 
           {currentQuestion && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="space-y-6">
+            <div className="flex flex-col lg:flex-row gap-8">
+              <div className="space-y-6 lg:w-1/2">
                 <QuestionCard
                   question={currentQuestion}
                   currentNum={currentStep}
@@ -77,7 +78,9 @@ export default function InterviewPlayer({ interviewData }: InterviewPlayerProps)
                 </div>
               </div>
 
-              <VideoRecorder onSubmit={handleVideoSubmit} />
+              <div className="lg:w-1/2">
+                <VideoRecorder onSubmit={handleVideoSubmit} />
+              </div>
             </div>
           )}
         </div>

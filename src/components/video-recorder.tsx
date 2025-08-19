@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -5,6 +6,7 @@ import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Circle, Square, Video, RefreshCw, Upload, AlertTriangle, VideoOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
 interface VideoRecorderProps {
   onSubmit: (blob: Blob) => void;
@@ -14,53 +16,58 @@ const MAX_DURATION_S = 180; // 3 minutes
 const MAX_RETAKES = 2;
 
 export default function VideoRecorder({ onSubmit }: VideoRecorderProps) {
-  const [status, setStatus] = useState<'idle' | 'permission' | 'ready' | 'recording' | 'preview' | 'error'>('idle');
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const [status, setStatus] = useState<'idle' | 'recording' | 'preview'>('idle');
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [retakes, setRetakes] = useState(0);
   const [countdown, setCountdown] = useState(MAX_DURATION_S);
+  
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const { toast } = useToast();
 
   useEffect(() => {
+    const getCameraPermission = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        streamRef.current = stream;
+        setHasCameraPermission(true);
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (error) {
+        console.error('Error accessing camera:', error);
+        setHasCameraPermission(false);
+        toast({
+          variant: 'destructive',
+          title: 'Camera Access Denied',
+          description: 'Please enable camera permissions in your browser settings to use this app.',
+        });
+      }
+    };
+
+    getCameraPermission();
+
     return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
       }
       if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current);
       }
     };
-  }, [stream]);
+  }, [toast]);
 
-  const requestPermissions = async () => {
-    setStatus('permission');
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      setStream(mediaStream);
-      setStatus('ready');
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-    } catch (err) {
-      console.error("Error accessing media devices.", err);
-      setStatus('error');
-      toast({
-        variant: "destructive",
-        title: "Camera/Mic Error",
-        description: "Could not access your camera and microphone. Please check permissions in your browser settings."
-      })
-    }
-  };
 
   const startRecording = () => {
-    if (!stream) return;
+    if (!streamRef.current) return;
     recordedChunksRef.current = [];
-    const recorder = new MediaRecorder(stream);
+    const recorder = new MediaRecorder(streamRef.current);
     mediaRecorderRef.current = recorder;
     
     recorder.ondataavailable = (event) => {
@@ -101,7 +108,7 @@ export default function VideoRecorder({ onSubmit }: VideoRecorderProps) {
     if (retakes < MAX_RETAKES) {
       setRetakes(retakes + 1);
       setVideoUrl(null);
-      setStatus('ready');
+      setStatus('idle');
     } else {
         toast({
             variant: "destructive",
@@ -124,41 +131,55 @@ export default function VideoRecorder({ onSubmit }: VideoRecorderProps) {
     return `${mins}:${secs}`;
   }
 
+  const renderContent = () => {
+    if (hasCameraPermission === null) {
+      return (
+        <div className="absolute text-center text-white z-10">
+          <p>Initializing camera...</p>
+        </div>
+      );
+    }
+    
+    if (status === 'recording') {
+      return (
+        <div className="absolute top-2 right-2 flex items-center gap-2 bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-sm font-bold z-20">
+          <Circle className="w-3 h-3 fill-current" />
+          <span>REC</span>
+          <span>{formatTime(countdown)}</span>
+        </div>
+      )
+    }
+
+    if (videoUrl && status === 'preview') {
+      return (
+        <video src={videoUrl} controls autoPlay className="absolute inset-0 w-full h-full object-cover z-10" />
+      )
+    }
+
+    return null;
+  }
+
   return (
     <Card className="h-full">
       <CardContent className="p-4 h-full flex flex-col items-center justify-center">
         <div className="w-full aspect-video bg-black rounded-lg overflow-hidden relative flex items-center justify-center">
           <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
-          {status !== 'recording' && status !== 'ready' && <div className="absolute inset-0 bg-black/50" />}
-          
-          {status === 'idle' && (
-            <div className="absolute text-center text-white z-10">
-              <Video className="w-12 h-12 mx-auto mb-4" />
-              <Button onClick={requestPermissions}>Enable Camera & Mic</Button>
-            </div>
-          )}
-          {status === 'permission' && <p className="absolute text-white z-10">Requesting permissions...</p>}
-          {status === 'error' && (
-             <div className="absolute text-center text-destructive-foreground z-10 p-4">
-              <VideoOff className="w-12 h-12 mx-auto mb-4 text-destructive" />
-              <h3 className="font-bold text-lg">Permission Denied</h3>
-              <p className="text-sm">Please allow camera and microphone access.</p>
-            </div>
-          )}
-          {status === 'recording' && (
-            <div className="absolute top-2 right-2 flex items-center gap-2 bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-sm font-bold">
-              <Circle className="w-3 h-3 fill-current" />
-              <span>REC</span>
-              <span>{formatTime(countdown)}</span>
-            </div>
-          )}
-          {videoUrl && status === 'preview' && (
-            <video src={videoUrl} controls className="absolute inset-0 w-full h-full object-cover z-10" />
-          )}
+          {renderContent()}
         </div>
+        
+        {hasCameraPermission === false && (
+            <Alert variant="destructive" className="mt-4">
+              <VideoOff className="h-4 w-4" />
+              <AlertTitle>Camera Access Required</AlertTitle>
+              <AlertDescription>
+                Please allow camera access in your browser to use this feature.
+              </AlertDescription>
+            </Alert>
+        )}
+
         <div className="w-full mt-4 flex flex-col sm:flex-row justify-between items-center gap-2">
             <div>
-              {status === 'ready' && <Button onClick={startRecording} size="lg"><Circle className="mr-2 h-4 w-4" /> Start Recording</Button>}
+              {status === 'idle' && <Button onClick={startRecording} size="lg" disabled={!hasCameraPermission}><Circle className="mr-2 h-4 w-4" /> Start Recording</Button>}
               {status === 'recording' && <Button onClick={stopRecording} variant="destructive" size="lg"><Square className="mr-2 h-4 w-4" /> Stop Recording</Button>}
               {status === 'preview' && (
                   <div className="flex gap-2">
@@ -168,7 +189,7 @@ export default function VideoRecorder({ onSubmit }: VideoRecorderProps) {
               )}
             </div>
             <div className="text-sm text-muted-foreground">
-                {status !== 'idle' && status !== 'permission' && status !== 'error' && (
+                {hasCameraPermission && (
                     <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
                         <AlertTriangle className="h-4 w-4 text-amber-500" />
                         <span>Max duration: {formatTime(MAX_DURATION_S)}</span>
