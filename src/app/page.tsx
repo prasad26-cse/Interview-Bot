@@ -57,11 +57,11 @@ export default function Home() {
                 </div>
               </div>
               <Image
-                src="https://placehold.co/600x400/20b2aa/ffffff.png"
+                src="https://placehold.co/600x400/3b82f6/ffffff.png"
                 width="600"
                 height="400"
                 alt="AI Interviewer Bot"
-                data-ai-hint="interview robot"
+                data-ai-hint="AI assistant"
                 className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
                 priority
               />
