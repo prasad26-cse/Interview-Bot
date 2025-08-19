@@ -5,7 +5,7 @@ import { createBrowserClient } from '@supabase/ssr'
 
 export function createClient() {
   return createBrowserClient(
-    'https://iwdfzvfqgupmrtpizeml.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3ZGZ6dmZxZ3VwbXJ0cGl6ZW1sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTk0MjYxMDUsImV4cCI6MjAzNDk4MjEwNX0.5B8i26G2L-dIAbrg22hpM3Ow1i9sCIYf0G0M32V6vQY'
+    'https://aobczqrvpudptqgkwpdy.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvYmN6cXJ2cHVkcHRxZ2t3cGR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQxNzUyODIsImV4cCI6MjAzOTc1MTI4Mn0.-1r_j6kOR-v4K3yo0-B2F2y14pnJ54uL4J9S3aZp9wM'
   )
 }
