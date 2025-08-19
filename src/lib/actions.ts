@@ -2,22 +2,24 @@
 "use server";
 import { generateInterviewQuestions } from "@/ai/flows/generate-interview-questions";
 import type { InterviewData, Role } from "@/lib/types";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { db } from "./firebase";
+import { createClient } from "./supabase/server";
 
 export async function createInterview(
   roleSlug: string
 ): Promise<InterviewData | null> {
     
-  const rolesRef = collection(db, "roles");
-  const q = query(rolesRef, where("slug", "==", roleSlug));
-  
-  const querySnapshot = await getDocs(q);
-  if (querySnapshot.empty) {
+  const supabase = createClient();
+  const { data: roleData, error: roleError } = await supabase
+    .from('roles')
+    .select('*')
+    .eq('slug', roleSlug)
+    .single();
+
+  if (roleError || !roleData) {
+    console.error("Error fetching role:", roleError);
     return null;
   }
-  const role = querySnapshot.docs[0].data() as Role;
-  role.id = querySnapshot.docs[0].id;
+  const role: Role = roleData;
 
 
   try {

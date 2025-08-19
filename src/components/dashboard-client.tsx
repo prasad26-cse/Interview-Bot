@@ -10,9 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import Link from 'next/link';
 import { Eye, Trash2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
-import { doc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { createClient } from '@/lib/supabase/client';
 
 interface DashboardClientProps {
   interviews: Interview[];
@@ -24,6 +23,7 @@ export default function DashboardClient({ interviews: initialInterviews, allRole
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const { toast } = useToast();
+  const supabase = createClient();
 
   const filteredInterviews = useMemo(() => {
     return interviews.filter((interview) => {
@@ -37,13 +37,15 @@ export default function DashboardClient({ interviews: initialInterviews, allRole
 
   const handleDelete = async (interviewId: string) => {
     try {
-        await deleteDoc(doc(db, "interviews", interviewId));
+        const { error } = await supabase.from('interviews').delete().match({ id: interviewId });
+        if (error) throw error;
+
         setInterviews(interviews.filter(i => i.id !== interviewId));
         toast({
             title: "Success",
             description: "Interview record deleted successfully.",
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error deleting document: ", error);
         toast({
             variant: "destructive",

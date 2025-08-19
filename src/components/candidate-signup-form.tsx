@@ -10,9 +10,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { AlertTriangle } from "lucide-react";
-import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { createClient } from "@/lib/supabase/client";
 
 export default function CandidateSignupForm() {
     const [email, setEmail] = useState('');
@@ -21,40 +19,55 @@ export default function CandidateSignupForm() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const supabase = createClient();
 
     const handleSignup = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
         
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
+        const { data, error: signUpError } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: {
+                    full_name: name,
+                },
+            },
+        });
+        
+        if (signUpError) {
+            if (signUpError.message.includes('User already registered')) {
+                setError('This email is already in use. Please use a different email.');
+            } else if (signUpError.message.includes('Password should be at least 6 characters')) {
+                 setError('The password is too weak. Please use a stronger password (at least 6 characters).');
+            } else {
+                setError(signUpError.message);
+            }
+            setLoading(false);
+            return;
+        }
 
-            // Store user info in Firestore
-            await setDoc(doc(db, "users", user.uid), {
-                uid: user.uid,
-                name: name,
+        if (data.user) {
+             const { error: profileError } = await supabase.from('profiles').insert({
+                id: data.user.id,
+                full_name: name,
                 email: email,
                 role: 'candidate'
-            });
+             });
 
-            router.push('/start');
-        } catch (error: any) {
-             if (error.code === 'auth/email-already-in-use') {
-                setError('This email is already in use. Please use a different email.');
-            } else if (error.code === 'auth/weak-password') {
-                setError('The password is too weak. Please use a stronger password.');
+            if (profileError) {
+                setError(profileError.message);
+                // Clean up user if profile creation fails
+                await supabase.auth.signOut();
+                // Potentially delete the user from auth as well for full cleanup
             } else {
-                setError(error.message);
+                 router.push('/start');
+                 router.refresh();
             }
-            // If user was created but firestore failed, sign out to prevent inconsistent state
-            if (auth.currentUser) {
-                await signOut(auth);
-            }
-        } finally {
-            setLoading(false);
         }
+       
+        setLoading(false);
     };
 
   return (

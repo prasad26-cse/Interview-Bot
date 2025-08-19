@@ -3,15 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { createClient } from "@/lib/supabase/server";
 import type { Role } from "@/lib/types";
 
 async function getRoles() {
-    const rolesCol = collection(db, 'roles');
-    const roleSnapshot = await getDocs(rolesCol);
-    const roleList = roleSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Role));
-    return roleList;
+    const supabase = createClient();
+    const { data, error } = await supabase.from('roles').select('*');
+    
+    if (error) {
+        console.error("Error fetching roles:", error);
+        return [];
+    }
+    return data as Role[];
 }
 
 export default async function StartPage() {

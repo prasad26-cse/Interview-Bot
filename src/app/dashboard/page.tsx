@@ -1,19 +1,38 @@
 
-import { collection, getDocs, query } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import DashboardClient from "@/components/dashboard-client";
+import { createClient } from "@/lib/supabase/server";
 import type { Interview, Role } from "@/lib/types";
 
 async function getDashboardData() {
-  const interviewsCol = collection(db, 'interviews');
-  const interviewSnapshot = await getDocs(interviewsCol);
-  const interviewList = interviewSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Interview));
+  const supabase = createClient();
 
-  const rolesCol = collection(db, 'roles');
-  const roleSnapshot = await getDocs(rolesCol);
-  const roleList = roleSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Role));
+  const { data: interviews, error: interviewsError } = await supabase
+    .from('interviews')
+    .select(`*, candidate:profiles(*)`);
   
-  return { interviews: interviewList, roles: roleList };
+  const { data: roles, error: rolesError } = await supabase
+    .from('roles')
+    .select('*');
+
+  if (interviewsError || rolesError) {
+    console.error("Error fetching dashboard data:", interviewsError || rolesError);
+    return { interviews: [], roles: [] };
+  }
+  
+  // The 'candidate' field is an object from the profiles table.
+  // We need to adjust the type to match what the client component expects.
+  const interviewList = interviews.map(interview => ({
+      ...interview,
+      candidate: {
+          id: interview.candidate.id,
+          name: interview.candidate.full_name,
+          email: interview.candidate.email,
+          role: interview.candidate.role,
+          avatarUrl: interview.candidate.avatar_url,
+      }
+  })) as unknown as Interview[];
+  
+  return { interviews: interviewList, roles: roles as Role[] };
 }
 
 

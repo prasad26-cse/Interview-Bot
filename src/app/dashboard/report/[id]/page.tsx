@@ -1,36 +1,50 @@
 
 import ReportView from "@/components/report-view";
 import { notFound } from "next/navigation";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { createClient } from "@/lib/supabase/server";
 import type { FullInterview, Interview, Role } from "@/lib/types";
 
 async function getInterviewDetails(id: string): Promise<FullInterview | null> {
-    const interviewDocRef = doc(db, 'interviews', id);
-    const interviewSnap = await getDoc(interviewDocRef);
-
-    if (!interviewSnap.exists()) {
+    const supabase = createClient();
+    
+    const { data, error } = await supabase
+        .from('interviews')
+        .select(`
+            *,
+            role:roles(*),
+            candidate:profiles(*)
+        `)
+        .eq('id', id)
+        .single();
+    
+    if (error || !data) {
+        console.error("Error fetching interview details:", error);
         return null;
     }
 
-    const interviewData = interviewSnap.data() as Interview;
-
-    const roleDocRef = doc(db, 'roles', interviewData.roleId);
-    const roleSnap = await getDoc(roleDocRef);
-
-    if (!roleSnap.exists()) {
-        return null; // Or handle as a partial interview
-    }
-    
-    const roleData = roleSnap.data() as Role;
+    const interviewData = data as any;
 
     return {
-        ...interviewData,
-        id: interviewSnap.id,
+        id: interviewData.id,
+        roleId: interviewData.roleId,
+        status: interviewData.status,
+        createdAt: interviewData.created_at,
+        submittedAt: interviewData.submitted_at,
+        evaluation: interviewData.evaluation,
+        responses: interviewData.responses,
         role: {
-            ...roleData,
-            id: roleSnap.id,
+            id: interviewData.role.id,
+            title: interviewData.role.title,
+            slug: interviewData.role.slug,
+            description: interviewData.role.description,
         },
+        candidate: {
+            id: interviewData.candidate.id,
+            name: interviewData.candidate.full_name,
+            email: interviewData.candidate.email,
+            role: interviewData.candidate.role,
+            avatarUrl: interviewData.candidate.avatar_url,
+        }
     }
 }
 
