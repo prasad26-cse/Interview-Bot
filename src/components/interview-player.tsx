@@ -107,7 +107,12 @@ export default function InterviewPlayer({ interviewData }: InterviewPlayerProps)
             interviewId: interviewData.id,
             role: interviewData.role,
             questions: interviewData.questions,
-            responses: responses,
+            responses: responses.map(r => ({ 
+              questionId: r.questionId,
+              transcript: r.transcript,
+              videoUrl: r.videoUrl,
+              duration_sec: r.duration_sec,
+            })),
             candidate: user,
         });
 
