@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, initializeAuth, indexedDBLocalPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -20,7 +20,13 @@ if (!getApps().length) {
   app = getApp();
 }
 
-const auth = getAuth(app);
+// Wrapping auth initialization in a check for window resolves the 403 error
+// by preventing the SDK from trying to connect to a backend it doesn't have
+// permissions for in this environment.
+const auth = typeof window !== 'undefined' 
+  ? initializeAuth(app, { persistence: indexedDBLocalPersistence })
+  : getAuth(app);
+  
 const db = getFirestore(app);
 
 export { app, auth, db };
