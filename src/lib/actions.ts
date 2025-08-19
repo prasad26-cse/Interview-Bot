@@ -1,3 +1,4 @@
+
 "use server";
 import { generateInterviewQuestions } from "@/ai/flows/generate-interview-questions";
 import { roles } from "@/lib/data";
@@ -18,7 +19,7 @@ export async function createInterview(
     });
 
     return {
-      id: `interview_${roleSlug}_${Date.now()}`,
+      id: `interview_${role.id}_${Date.now()}`,
       role: role,
       greeting: greeting,
       questions: questions.sort((a, b) => a.index - b.index),
@@ -27,7 +28,7 @@ export async function createInterview(
     console.error("Failed to generate interview questions:", error);
     // Return a fallback for demonstration purposes
     return {
-      id: `interview_${roleSlug}_${Date.now()}`,
+      id: `interview_${role.id}_${Date.now()}`,
       role: role,
       greeting: `Welcome to your interview for the ${role.title} position! We're excited to learn more about you. Please take your time to provide thoughtful answers to the following questions.`,
       questions: [

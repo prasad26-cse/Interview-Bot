@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import LlmIntro from "./llm-intro";
 import { Button } from "./ui/button";
 import QuestionCard from "./question-card";
-import VideoRecorder from "./video-recorder";
+import VideoRec from "./video-rec";
 
 interface InterviewPlayerProps {
   interviewData: InterviewData;
@@ -79,7 +79,7 @@ export default function InterviewPlayer({ interviewData }: InterviewPlayerProps)
               </div>
 
               <div className="lg:w-1/2">
-                <VideoRecorder onSubmit={handleVideoSubmit} />
+                <VideoRec onSubmit={handleVideoSubmit} />
               </div>
             </div>
           )}

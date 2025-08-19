@@ -8,14 +8,14 @@ import { Circle, Square, RefreshCw, Upload, AlertTriangle, VideoOff } from "luci
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
-interface VideoRecorderProps {
+interface VideoRecProps {
   onSubmit: (blob: Blob) => void;
 }
 
 const MAX_DURATION_S = 180; // 3 minutes
 const MAX_RETAKES = 2;
 
-export default function VideoRecorder({ onSubmit }: VideoRecorderProps) {
+export default function VideoRec({ onSubmit }: VideoRecProps) {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [status, setStatus] = useState<'idle' | 'recording' | 'preview'>('idle');
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -34,9 +34,9 @@ export default function VideoRecorder({ onSubmit }: VideoRecorderProps) {
     if (mediaRecorderRef.current && status === 'recording') {
       mediaRecorderRef.current.stop();
     }
-     if (countdownIntervalRef.current) {
+    if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current);
-      }
+    }
   }, [status]);
   
   useEffect(() => {
@@ -66,7 +66,7 @@ export default function VideoRecorder({ onSubmit }: VideoRecorderProps) {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
-     stopRecording();
+      stopRecording();
     };
   }, [toast, stopRecording]);
 
@@ -139,27 +139,24 @@ export default function VideoRecorder({ onSubmit }: VideoRecorderProps) {
     <Card className="h-full">
       <CardContent className="p-4 h-full flex flex-col items-center justify-center">
         <div className="w-full aspect-video bg-black rounded-lg overflow-hidden relative flex items-center justify-center">
-          
-          <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
-
-          {status === 'recording' && (
-            <div className="absolute top-2 right-2 flex items-center gap-2 bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-sm font-bold z-20">
-              <Circle className="w-3 h-3 fill-current" />
-              <span>REC</span>
-              <span>{formatTime(countdown)}</span>
-            </div>
-          )}
-
-          {status === 'preview' && videoUrl && (
-             <video src={videoUrl} controls autoPlay className="w-full h-full object-cover z-10" />
-          )}
-
-          {hasCameraPermission === false && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-black">
-                <VideoOff className="h-12 w-12 mb-4" />
-                <p>Camera access denied.</p>
-            </div>
-           )}
+            {status !== 'preview' && <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />}
+            
+            {status === 'recording' && (
+                <div className="absolute top-2 right-2 flex items-center gap-2 bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-sm font-bold z-20">
+                    <Circle className="w-3 h-3 fill-current" />
+                    <span>REC</span>
+                    <span>{formatTime(countdown)}</span>
+                </div>
+            )}
+             {status === 'preview' && videoUrl && (
+                <video src={videoUrl} controls autoPlay className="w-full h-full object-cover z-10" />
+            )}
+             {hasCameraPermission === false && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-black">
+                    <VideoOff className="h-12 w-12 mb-4" />
+                    <p>Camera access denied.</p>
+                </div>
+            )}
         </div>
         
         {hasCameraPermission === false && (
