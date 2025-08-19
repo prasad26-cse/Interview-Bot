@@ -49,8 +49,8 @@ export default function HomePage() {
                 </div>
                 <div className="flex flex-col gap-4 min-[400px]:flex-row">
                   <Button asChild size="lg">
-                    <Link href="/login/candidate">
-                      Candidate Login
+                    <Link href="/start">
+                      Start Interview
                     </Link>
                   </Button>
                    <Button asChild size="lg" variant="secondary">
