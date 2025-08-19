@@ -43,7 +43,7 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
        if (user.role === 'recruiter') {
          router.push('/dashboard');
        } else {
-         router.push('/home');
+         router.push('/start');
        }
        // We use window.location.reload() to force a full page reload,
        // which ensures the header state is correctly updated.

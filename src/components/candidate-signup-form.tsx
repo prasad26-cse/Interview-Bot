@@ -40,7 +40,7 @@ export default function CandidateSignupForm() {
         users.push(newUser);
 
         localStorage.setItem('user', JSON.stringify(newUser));
-        router.push('/home');
+        router.push('/start');
         window.location.reload();
     };
 
