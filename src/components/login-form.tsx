@@ -51,6 +51,8 @@ export default function LoginForm({ recruiterOnly }: LoginFormProps) {
   };
 
   const signupLink = recruiterOnly ? "/signup/recruiter" : "/signup/candidate";
+  const loginLink = recruiterOnly ? "/" : "/login/recruiter";
+  const otherRole = recruiterOnly ? "Candidate" : "Recruiter";
 
   return (
     <form onSubmit={handleLogin}>
@@ -91,11 +93,17 @@ export default function LoginForm({ recruiterOnly }: LoginFormProps) {
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </Button>
-        <div className="text-center text-sm text-muted-foreground">
+        <div className="text-center text-sm text-muted-foreground space-y-2">
           <p>
             Don't have an account?{" "}
             <Link href={signupLink} className="text-primary hover:underline">
               Create one
+            </Link>
+          </p>
+           <p>
+            Are you a {otherRole}?{" "}
+            <Link href={loginLink} className="text-primary hover:underline">
+              Login here
             </Link>
           </p>
         </div>
