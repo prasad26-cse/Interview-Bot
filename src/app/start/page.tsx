@@ -24,7 +24,7 @@ export default function StartPage() {
             </CardContent>
             <CardFooter>
               <Button asChild className="w-full">
-                <Link href={`/interview/${role.slug}`}>
+                <Link href={`/interview/start/${role.slug}`}>
                   Start Interview <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>

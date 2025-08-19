@@ -83,7 +83,7 @@ export default function DashboardClient({ interviews }: DashboardClientProps) {
                   </TableCell>
                   <TableCell className="text-right">
                     <Button asChild variant="ghost" size="icon">
-                      <Link href={`/interview/${interview.id}/report`}>
+                      <Link href={`/dashboard/report/${interview.id}`}>
                         <Eye className="h-4 w-4" />
                       </Link>
                     </Button>
