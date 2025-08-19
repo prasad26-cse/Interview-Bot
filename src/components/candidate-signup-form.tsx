@@ -58,9 +58,7 @@ export default function CandidateSignupForm() {
 
             if (profileError) {
                 setError(profileError.message);
-                // Clean up user if profile creation fails
                 await supabase.auth.signOut();
-                // Potentially delete the user from auth as well for full cleanup
             } else {
                  router.push('/start');
                  router.refresh();
