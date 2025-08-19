@@ -1,6 +1,7 @@
+
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getAuth, initializeAuth, indexedDBLocalPersistence } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, initializeFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   projectId: "ai-video-interviewer",
@@ -27,6 +28,9 @@ const auth = typeof window !== 'undefined'
   ? initializeAuth(app, { persistence: indexedDBLocalPersistence })
   : getAuth(app);
   
-const db = getFirestore(app);
+const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+});
+
 
 export { app, auth, db };
