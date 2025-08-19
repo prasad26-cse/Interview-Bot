@@ -31,17 +31,18 @@ export default function VideoRec({ onSubmit }: VideoRecProps) {
   const { toast } = useToast();
 
   const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && status === 'recording') {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
     }
     if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current);
     }
-  }, [status]);
+  }, []);
   
   useEffect(() => {
     const getCameraPermission = async () => {
       try {
+        // Request both video and audio
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         streamRef.current = stream;
         setHasCameraPermission(true);
@@ -50,12 +51,13 @@ export default function VideoRec({ onSubmit }: VideoRecProps) {
           videoRef.current.srcObject = stream;
         }
       } catch (error) {
-        console.error('Error accessing camera:', error);
+        console.error('Error accessing camera/audio:', error);
         setHasCameraPermission(false);
         toast({
           variant: 'destructive',
-          title: 'Camera Access Denied',
-          description: 'Please enable camera permissions in your browser settings to use this app.',
+          title: 'Device Access Denied',
+          description: 'Please enable camera and microphone permissions in your browser settings to continue.',
+          duration: 5000,
         });
       }
     };
@@ -63,6 +65,7 @@ export default function VideoRec({ onSubmit }: VideoRecProps) {
     getCameraPermission();
 
     return () => {
+      // Stop all tracks when component unmounts
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
@@ -72,37 +75,57 @@ export default function VideoRec({ onSubmit }: VideoRecProps) {
 
 
   const startRecording = () => {
-    if (!streamRef.current) return;
-    recordedChunksRef.current = [];
-    const recorder = new MediaRecorder(streamRef.current);
-    mediaRecorderRef.current = recorder;
-    
-    recorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        recordedChunksRef.current.push(event.data);
-      }
-    };
-
-    recorder.onstop = () => {
-      const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
-      const url = URL.createObjectURL(blob);
-      setVideoUrl(url);
-      setStatus('preview');
-      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-    };
-    
-    recorder.start();
-    setStatus('recording');
-    setCountdown(MAX_DURATION_S);
-    countdownIntervalRef.current = setInterval(() => {
-        setCountdown(prev => {
-            if (prev <= 1) {
-                stopRecording();
-                return 0;
-            }
-            return prev - 1;
+    if (!streamRef.current) {
+         toast({
+          variant: 'destructive',
+          title: 'Camera not ready',
+          description: 'Please ensure camera permissions are enabled and try again.',
         });
-    }, 1000);
+        return;
+    }
+    recordedChunksRef.current = [];
+    
+    try {
+        const recorder = new MediaRecorder(streamRef.current, { mimeType: 'video/webm' });
+        mediaRecorderRef.current = recorder;
+        
+        recorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            recordedChunksRef.current.push(event.data);
+          }
+        };
+
+        recorder.onstop = () => {
+          const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
+          const url = URL.createObjectURL(blob);
+          setVideoUrl(url);
+          setStatus('preview');
+          if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+          if (videoRef.current) {
+             videoRef.current.srcObject = null;
+          }
+        };
+        
+        recorder.start();
+        setStatus('recording');
+        setCountdown(MAX_DURATION_S);
+        countdownIntervalRef.current = setInterval(() => {
+            setCountdown(prev => {
+                if (prev <= 1) {
+                    stopRecording();
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+    } catch (error) {
+        console.error("Error starting recorder:", error);
+        toast({
+            variant: "destructive",
+            title: "Recording Error",
+            description: "Could not start video recording. Please check your device and browser.",
+        });
+    }
   };
 
   const handleRetake = () => {
@@ -111,6 +134,7 @@ export default function VideoRec({ onSubmit }: VideoRecProps) {
       setVideoUrl(null);
       setStatus('idle');
        if (videoRef.current && streamRef.current) {
+          // Re-attach live stream for preview
           videoRef.current.srcObject = streamRef.current;
         }
     } else {
@@ -139,22 +163,34 @@ export default function VideoRec({ onSubmit }: VideoRecProps) {
     <Card className="h-full">
       <CardContent className="p-4 h-full flex flex-col items-center justify-center">
         <div className="w-full aspect-video bg-black rounded-lg overflow-hidden relative flex items-center justify-center">
-            {status !== 'preview' && <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />}
+            {/* Always render video tag to attach stream */}
+            <video 
+              ref={videoRef} 
+              autoPlay 
+              muted={status !== 'preview'} 
+              playsInline 
+              className="w-full h-full object-cover" 
+              src={status === 'preview' ? videoUrl! : undefined}
+              controls={status === 'preview'}
+            />
             
             {status === 'recording' && (
                 <div className="absolute top-2 right-2 flex items-center gap-2 bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-sm font-bold z-20">
-                    <Circle className="w-3 h-3 fill-current" />
+                    <Circle className="w-3 h-3 fill-current animate-pulse" />
                     <span>REC</span>
                     <span>{formatTime(countdown)}</span>
                 </div>
             )}
-             {status === 'preview' && videoUrl && (
-                <video src={videoUrl} controls autoPlay className="w-full h-full object-cover z-10" />
-            )}
-             {hasCameraPermission === false && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-black">
+
+            {hasCameraPermission === false && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/70">
                     <VideoOff className="h-12 w-12 mb-4" />
-                    <p>Camera access denied.</p>
+                    <p>Camera and Mic access denied.</p>
+                </div>
+            )}
+            {hasCameraPermission === null && (
+                 <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/70">
+                    <p>Requesting camera access...</p>
                 </div>
             )}
         </div>
@@ -162,9 +198,9 @@ export default function VideoRec({ onSubmit }: VideoRecProps) {
         {hasCameraPermission === false && (
             <Alert variant="destructive" className="mt-4">
               <VideoOff className="h-4 w-4" />
-              <AlertTitle>Camera Access Required</AlertTitle>
+              <AlertTitle>Device Access Required</AlertTitle>
               <AlertDescription>
-                Please allow camera access in your browser to use this feature.
+                Please allow camera and microphone access in your browser to record your answer. You may need to refresh the page after granting permissions.
               </AlertDescription>
             </Alert>
         )}
