@@ -1,12 +1,12 @@
 
 import DashboardClient from "@/components/dashboard-client";
 import { interviews, roles } from "@/lib/data";
-import type { Interview, Role } from "@/lib/types";
+import type { FullInterview, Role } from "@/lib/types";
 
 async function getDashboardData() {
   // In a real app, you would fetch this from your database.
   // Here, we're using mock data.
-  const interviewList = interviews as Interview[];
+  const interviewList = interviews as FullInterview[];
   const roleList = roles as Role[];
   
   return { interviews: interviewList, roles: roleList };

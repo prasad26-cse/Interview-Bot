@@ -2,18 +2,20 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
-import type { Interview, Role } from '@/lib/types';
+import type { FullInterview, Role } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Link from 'next/link';
-import { Eye, Trash2 } from 'lucide-react';
+import { Eye, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 interface DashboardClientProps {
-  interviews: Interview[];
+  interviews: FullInterview[];
   allRoles: Role[];
 }
 
@@ -21,6 +23,8 @@ export default function DashboardClient({ interviews: initialInterviews, allRole
   const [interviews, setInterviews] = useState(initialInterviews);
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [openCollapsibles, setOpenCollapsibles] = useState<Record<string, boolean>>({});
+
   const { toast } = useToast();
   
   useEffect(() => {
@@ -45,6 +49,10 @@ export default function DashboardClient({ interviews: initialInterviews, allRole
         description: "Interview record deleted successfully (mock).",
     });
   };
+  
+  const toggleCollapsible = (id: string) => {
+      setOpenCollapsibles(prev => ({...prev, [id]: !prev[id]}));
+  }
 
   return (
     <div>
@@ -76,6 +84,7 @@ export default function DashboardClient({ interviews: initialInterviews, allRole
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12"></TableHead>
               <TableHead>Candidate</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
@@ -87,28 +96,38 @@ export default function DashboardClient({ interviews: initialInterviews, allRole
           <TableBody>
             {filteredInterviews.length > 0 ? (
               filteredInterviews.map((interview) => (
-                <TableRow key={interview.id}>
-                  <TableCell className="font-medium">{interview.candidate.name}</TableCell>
-                  <TableCell>{getRoleTitle(interview.roleId)}</TableCell>
+                <Collapsible asChild key={interview.id} open={openCollapsibles[interview.id] || false} onOpenChange={() => toggleCollapsible(interview.id)}>
+                <>
+                <TableRow className="cursor-pointer">
                   <TableCell>
+                     <CollapsibleTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            {openCollapsibles[interview.id] ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                            <span className="sr-only">Toggle details</span>
+                        </Button>
+                     </CollapsibleTrigger>
+                  </TableCell>
+                  <TableCell className="font-medium" onClick={() => toggleCollapsible(interview.id)}>{interview.candidate.name}</TableCell>
+                  <TableCell onClick={() => toggleCollapsible(interview.id)}>{getRoleTitle(interview.roleId)}</TableCell>
+                  <TableCell onClick={() => toggleCollapsible(interview.id)}>
                     <Badge variant={interview.status === 'scored' ? 'default' : 'secondary'}>
                       {interview.status}
                     </Badge>
                   </TableCell>
-                  <TableCell>{new Date(interview.submittedAt).toLocaleDateString()}</TableCell>
-                  <TableCell className="text-right font-semibold text-lg text-primary">
-                    {interview.evaluation?.overallScore ? `${interview.evaluation.overallScore}/5` : 'N/A'}
+                  <TableCell onClick={() => toggleCollapsible(interview.id)}>{new Date(interview.submittedAt).toLocaleDateString()}</TableCell>
+                  <TableCell className="text-right font-semibold text-lg text-primary" onClick={() => toggleCollapsible(interview.id)}>
+                    {interview.evaluation?.overallScore ? `${interview.evaluation.overallScore.toFixed(1)}/5` : 'N/A'}
                   </TableCell>
                   <TableCell className="text-right">
                     <Button asChild variant="ghost" size="icon">
-                      <Link href={`/dashboard/report/${interview.id}`}>
+                      <Link href={`/dashboard/report/${interview.id}`} onClick={(e) => e.stopPropagation()}>
                         <Eye className="h-4 w-4" />
                       </Link>
                     </Button>
 
-                    <AlertDialog>
+                    <AlertDialog onOpenChange={(open) => open && false}>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={(e) => e.stopPropagation()}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </AlertDialogTrigger>
@@ -133,10 +152,35 @@ export default function DashboardClient({ interviews: initialInterviews, allRole
 
                   </TableCell>
                 </TableRow>
+                <CollapsibleContent asChild>
+                    <TableRow>
+                        <TableCell colSpan={7} className="p-0">
+                            <div className="p-4 bg-muted/50">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Interview Details</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        {interview.responses.length > 0 ? interview.responses.map((response, index) => (
+                                            <div key={response.questionId} className="border-b pb-2 last:border-b-0">
+                                                <p className="font-semibold">Q{index + 1}: {response.questionPrompt}</p>
+                                                <p className="text-sm text-muted-foreground pl-4 pt-1 whitespace-pre-wrap">A: {response.transcript || "No transcript available."}</p>
+                                            </div>
+                                        )) : (
+                                            <p className="text-muted-foreground">No responses recorded for this interview.</p>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </TableCell>
+                    </TableRow>
+                </CollapsibleContent>
+                </>
+                </Collapsible>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="text-center h-24">
+                <TableCell colSpan={7} className="text-center h-24">
                   No interviews found.
                 </TableCell>
               </TableRow>
