@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { createClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 interface LoginFormProps {
   recruiterOnly?: boolean;
@@ -22,7 +22,8 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
+  // Use the shared Supabase client
+  const supabase = getSupabaseBrowserClient();
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();

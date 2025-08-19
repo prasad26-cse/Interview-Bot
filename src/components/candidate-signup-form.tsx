@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { AlertTriangle } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export default function CandidateSignupForm() {
     const [email, setEmail] = useState('');
@@ -19,7 +19,8 @@ export default function CandidateSignupForm() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-    const supabase = createClient();
+    // Use the shared Supabase client
+    const supabase = getSupabaseBrowserClient();
 
     const handleSignup = async (e: FormEvent) => {
         e.preventDefault();

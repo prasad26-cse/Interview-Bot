@@ -11,7 +11,7 @@ import Link from 'next/link';
 import { Eye, Trash2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { createClient } from '@/lib/supabase/client';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 interface DashboardClientProps {
   interviews: Interview[];
@@ -23,7 +23,7 @@ export default function DashboardClient({ interviews: initialInterviews, allRole
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const { toast } = useToast();
-  const supabase = createClient();
+  const supabase = getSupabaseBrowserClient();
 
   const filteredInterviews = useMemo(() => {
     return interviews.filter((interview) => {
