@@ -23,8 +23,8 @@ export default function SignupPage() {
         // 2. Handle potential errors (e.g., email already exists).
         // 3. Log the user in and redirect.
         console.log('New user created (simulation):', { name, email });
-        // For this demo, we'll just redirect to the login page with a success message.
-        router.push('/login');
+        // For this demo, we'll just redirect to the dashboard to simulate auto-login.
+        router.push('/dashboard');
     };
 
   return (
