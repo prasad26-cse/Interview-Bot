@@ -23,7 +23,7 @@ export default function DonePage() {
           </p>
           <div className="pt-4">
             <Button asChild>
-              <Link href="/">Return to Homepage</Link>
+              <Link href="/start">Start New Interview</Link>
             </Button>
           </div>
         </CardContent>
