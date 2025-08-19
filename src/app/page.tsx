@@ -1,6 +1,8 @@
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Briefcase, Cpu, FileText, Bot } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 const features = [
@@ -54,7 +56,7 @@ export default function Home() {
                   </Button>
                 </div>
               </div>
-              <img
+              <Image
                 src="https://placehold.co/600x400.png"
                 width="600"
                 height="400"
@@ -91,10 +93,10 @@ export default function Home() {
             </div>
           </div>
         </section>
+        <footer className="flex items-center justify-center w-full h-24 border-t">
+          <p className="text-muted-foreground">© 2024 VidHire. All rights reserved.</p>
+        </footer>
       </main>
-      <footer className="flex items-center justify-center w-full h-24 border-t">
-        <p className="text-muted-foreground">© 2024 VidHire. All rights reserved.</p>
-      </footer>
     </div>
   );
 }
