@@ -20,13 +20,13 @@ export default function Header() {
   const handleLogout = () => {
     localStorage.removeItem("user");
     setIsLoggedIn(false);
-    router.push('/login');
+    router.push('/'); // Redirect to general login page on logout
   };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-screen-2xl items-center">
-        <Link href={isLoggedIn ? "/home" : "/login"} className="mr-6 flex items-center space-x-2">
+        <Link href={isLoggedIn ? "/home" : "/"} className="mr-6 flex items-center space-x-2">
           <Bot className="h-6 w-6 text-primary" />
           <span className="font-bold sm:inline-block">
             VidHire
@@ -38,9 +38,12 @@ export default function Header() {
               <Button asChild>
                 <Link href="/start">Start Interview</Link>
               </Button>
-              <Button onClick={handleLogout} variant="outline">
-                <LogOut className="mr-2" />
-                Logout
+              <Button asChild variant="outline">
+                <Link href="/dashboard">Dashboard</Link>
+              </Button>
+              <Button onClick={handleLogout} variant="ghost" size="icon">
+                <LogOut />
+                <span className="sr-only">Logout</span>
               </Button>
             </>
           ) : (
@@ -49,7 +52,10 @@ export default function Header() {
                 Start Interview
               </Button>
               <Button asChild variant="outline">
-                <Link href="/login">Login</Link>
+                <Link href="/">Login</Link>
+              </Button>
+               <Button asChild>
+                <Link href="/login">Recruiter Login</Link>
               </Button>
             </>
           )}

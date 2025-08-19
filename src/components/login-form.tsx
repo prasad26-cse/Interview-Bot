@@ -28,9 +28,14 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
 
     if (user) {
        if (recruiterOnly && user.role !== 'recruiter') {
-        setError("This login is for recruiters only.");
+        setError("This login is for recruiters only. Please use the general login page.");
         return;
        }
+       if (!recruiterOnly && user.role === 'recruiter') {
+        setError("This login is for candidates. Please use the recruiter login page.");
+        return;
+       }
+
        // In a real app, you'd also check the password
        setError(null);
        localStorage.setItem('user', JSON.stringify(user));
@@ -40,7 +45,9 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
        } else {
          router.push('/home');
        }
-       router.refresh(); // Refresh to update header state
+       // We use window.location.reload() to force a full page reload,
+       // which ensures the header state is correctly updated.
+       window.location.reload();
     } else {
       setError("No account found with that email. Please create an account.");
     }
@@ -61,7 +68,7 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
           <Input 
             id="email" 
             type="email" 
-            placeholder="user@example.com" 
+            placeholder={recruiterOnly ? "recruiter@example.com" : "user@example.com"}
             required 
             value={email}
             onChange={(e) => setEmail(e.target.value)}
