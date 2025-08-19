@@ -2,8 +2,7 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import type { Interview } from '@/lib/types';
-import { roles } from '@/lib/data';
+import type { Interview, Role } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,15 +10,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import Link from 'next/link';
 import { Eye, Trash2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
+import { doc, deleteDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 interface DashboardClientProps {
   interviews: Interview[];
+  allRoles: Role[];
 }
 
-export default function DashboardClient({ interviews: initialInterviews }: DashboardClientProps) {
+export default function DashboardClient({ interviews: initialInterviews, allRoles }: DashboardClientProps) {
   const [interviews, setInterviews] = useState(initialInterviews);
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const { toast } = useToast();
 
   const filteredInterviews = useMemo(() => {
     return interviews.filter((interview) => {
@@ -29,11 +33,24 @@ export default function DashboardClient({ interviews: initialInterviews }: Dashb
     });
   }, [interviews, roleFilter, statusFilter]);
   
-  const getRoleTitle = (roleId: string) => roles.find(r => r.id === roleId)?.title || 'Unknown Role';
+  const getRoleTitle = (roleId: string) => allRoles.find(r => r.id === roleId)?.title || 'Unknown Role';
 
-  const handleDelete = (interviewId: string) => {
-    // In a real app, you'd call a server action to delete from the DB
-    setInterviews(interviews.filter(i => i.id !== interviewId));
+  const handleDelete = async (interviewId: string) => {
+    try {
+        await deleteDoc(doc(db, "interviews", interviewId));
+        setInterviews(interviews.filter(i => i.id !== interviewId));
+        toast({
+            title: "Success",
+            description: "Interview record deleted successfully.",
+        });
+    } catch (error) {
+        console.error("Error deleting document: ", error);
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to delete the interview record.",
+        });
+    }
   };
 
   return (
@@ -45,7 +62,7 @@ export default function DashboardClient({ interviews: initialInterviews }: Dashb
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Roles</SelectItem>
-            {roles.map(role => (
+            {allRoles.map(role => (
               <SelectItem key={role.id} value={role.id}>{role.title}</SelectItem>
             ))}
           </SelectContent>

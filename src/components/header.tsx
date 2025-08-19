@@ -6,22 +6,38 @@ import { Button } from "./ui/button";
 import { Bot, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { onAuthStateChanged, signOut, type User } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export default function Header() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    // Check localStorage on the client side
-    const user = localStorage.getItem("user");
-    setIsLoggedIn(!!user);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    setIsLoggedIn(false);
-    router.push('/'); // Redirect to general login page on logout
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push('/');
   };
+  
+  const isLoggedIn = !!user;
+
+  if (loading) {
+    return (
+       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 max-w-screen-2xl items-center">
+        </div>
+      </header>
+    )
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -48,9 +64,6 @@ export default function Header() {
             </>
           ) : (
             <>
-              <Button disabled>
-                Start Interview
-              </Button>
               <Button asChild variant="outline">
                 <Link href="/">Login</Link>
               </Button>

@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { users } from "@/lib/data";
 import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 
 interface LoginFormProps {
   recruiterOnly?: boolean;
@@ -20,36 +22,46 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = (e: FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    const user = users.find(u => u.email === email);
+    setLoading(true);
+    setError(null);
 
-    if (user) {
-       if (recruiterOnly && user.role !== 'recruiter') {
-        setError("This login is for recruiters only. Please use the general login page.");
-        return;
-       }
-       if (!recruiterOnly && user.role === 'recruiter') {
-        setError("This login is for candidates. Please use the recruiter login page.");
-        return;
-       }
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-       // In a real app, you'd also check the password
-       setError(null);
-       localStorage.setItem('user', JSON.stringify(user));
+      // Get user role from Firestore
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const userRole = userData.role;
 
-       if (user.role === 'recruiter') {
-         router.push('/dashboard');
-       } else {
-         router.push('/start');
-       }
-       // We use window.location.reload() to force a full page reload,
-       // which ensures the header state is correctly updated.
-       window.location.reload();
-    } else {
-      setError("No account found with that email. Please create an account.");
+        if (recruiterOnly && userRole !== 'recruiter') {
+          setError("This login is for recruiters only.");
+          await auth.signOut();
+        } else if (!recruiterOnly && userRole === 'recruiter') {
+          setError("This login is for candidates. Please use the recruiter login page.");
+          await auth.signOut();
+        } else {
+          // Successful login
+          if (userRole === 'recruiter') {
+            router.push('/dashboard');
+          } else {
+            router.push('/start');
+          }
+        }
+      } else {
+        setError("User data not found. Please contact support.");
+        await auth.signOut();
+      }
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,6 +86,7 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
             required 
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            disabled={loading}
           />
         </div>
         <div className="grid gap-2">
@@ -84,11 +97,14 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
             required 
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
           />
         </div>
       </CardContent>
       <CardFooter className="flex flex-col gap-4">
-        <Button type="submit" className="w-full">Login</Button>
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
+        </Button>
         <p className="text-sm text-muted-foreground">
           Don't have an account?{" "}
           <Link href={signupLink} className="text-primary hover:underline">

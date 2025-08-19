@@ -1,11 +1,22 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { roles } from "@/lib/data";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import type { Role } from "@/lib/types";
 
-export default function StartPage() {
+async function getRoles() {
+    const rolesCol = collection(db, 'roles');
+    const roleSnapshot = await getDocs(rolesCol);
+    const roleList = roleSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Role));
+    return roleList;
+}
+
+export default async function StartPage() {
+  const roles = await getRoles();
+
   return (
     <div className="container mx-auto py-12 md:py-20">
       <div className="text-center mb-12">

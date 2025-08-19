@@ -1,5 +1,8 @@
 import type { Role, User, Interview } from './types';
 
+// This file now contains only placeholder data or can be used for seeding the database.
+// All dynamic data is fetched from Firebase.
+
 export const roles: Role[] = [
   {
     id: 'role_1',

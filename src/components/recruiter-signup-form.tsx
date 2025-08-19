@@ -8,40 +8,43 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import type { User } from "@/lib/types";
-import { users } from "@/lib/data";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { AlertTriangle } from "lucide-react";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 
 export default function RecruiterSignupForm() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    const handleSignup = (e: FormEvent) => {
+    const handleSignup = async (e: FormEvent) => {
         e.preventDefault();
-        
-        const existingUser = users.find(u => u.email === email);
-        if (existingUser) {
-            setError("An account with this email already exists. Please use a different email or log in.");
-            return;
-        }
+        setLoading(true);
+        setError(null);
 
-        const newUser: User = {
-          id: `user_${Date.now()}`,
-          name,
-          email,
-          role: 'recruiter'
-        }
-        console.log('New user created (simulation):', newUser);
-        
-        users.push(newUser);
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
 
-        localStorage.setItem('user', JSON.stringify(newUser));
-        router.push('/dashboard');
-        window.location.reload();
+            // Store user info in Firestore
+            await setDoc(doc(db, "users", user.uid), {
+                uid: user.uid,
+                name: name,
+                email: email,
+                role: 'recruiter'
+            });
+
+            router.push('/dashboard');
+        } catch (error: any) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
   return (
@@ -63,6 +66,7 @@ export default function RecruiterSignupForm() {
                 required 
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                disabled={loading}
             />
           </div>
           <div className="grid gap-2">
@@ -74,21 +78,26 @@ export default function RecruiterSignupForm() {
                 required 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
             />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="password">Password</Label>
             <Input 
                 id="password" 
-                type="password" 
+                type="password"
+                placeholder="••••••••" 
                 required 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
             />
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full">Create Account</Button>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Creating Account..." : "Create Account"}
+          </Button>
            <p className="text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link href="/login" className="text-primary hover:underline">

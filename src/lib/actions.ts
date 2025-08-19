@@ -1,16 +1,24 @@
 
 "use server";
 import { generateInterviewQuestions } from "@/ai/flows/generate-interview-questions";
-import { roles } from "@/lib/data";
-import type { InterviewData } from "@/lib/types";
+import type { InterviewData, Role } from "@/lib/types";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "./firebase";
 
 export async function createInterview(
   roleSlug: string
 ): Promise<InterviewData | null> {
-  const role = roles.find((r) => r.slug === roleSlug);
-  if (!role) {
+    
+  const rolesRef = collection(db, "roles");
+  const q = query(rolesRef, where("slug", "==", roleSlug));
+  
+  const querySnapshot = await getDocs(q);
+  if (querySnapshot.empty) {
     return null;
   }
+  const role = querySnapshot.docs[0].data() as Role;
+  role.id = querySnapshot.docs[0].id;
+
 
   try {
     const interviewContent = await generateInterviewQuestions({
