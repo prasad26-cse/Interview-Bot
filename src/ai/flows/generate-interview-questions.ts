@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -46,7 +47,7 @@ const greetingGeneratorPrompt = ai.definePrompt({
   name: 'greetingGeneratorPrompt',
   input: {schema: GenerateInterviewQuestionsInputSchema},
   output: {schema: z.string().describe('A role-specific greeting for the candidate.')},
-  prompt: `You are a friendly recruiter. Write a 2–3 sentence, role‑specific greeting that sets expectations and encourages thoughtful answers. Tone: warm, clear, professional.\n\nROLE: {{{role}}}\nDESCRIPTION: {{{description}}}`, 
+  prompt: `You are a friendly recruiter. Write a 2-3 sentence, role-specific greeting that sets expectations and encourages thoughtful answers. Tone: warm, clear, professional.\n\nROLE: {{{role}}}\nDESCRIPTION: {{{description}}}`, 
 });
 
 const generateInterviewQuestionsFlow = ai.defineFlow(
