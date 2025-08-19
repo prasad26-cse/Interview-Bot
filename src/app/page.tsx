@@ -2,6 +2,7 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Briefcase } from "lucide-react";
 import LoginForm from "@/components/login-form";
+import ClientOnly from "@/components/client-only";
 
 export default function LoginPage() {
   return (
@@ -16,7 +17,9 @@ export default function LoginPage() {
               Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
-          <LoginForm />
+          <ClientOnly>
+            <LoginForm />
+          </ClientOnly>
       </Card>
     </div>
   );

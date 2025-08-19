@@ -2,6 +2,7 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Briefcase } from "lucide-react";
 import LoginForm from "@/components/login-form";
+import ClientOnly from "@/components/client-only";
 
 export default function LoginPage() {
   return (
@@ -16,7 +17,9 @@ export default function LoginPage() {
               Enter your credentials to access the dashboard
             </CardDescription>
           </CardHeader>
-          <LoginForm recruiterOnly={true} />
+          <ClientOnly>
+            <LoginForm recruiterOnly={true} />
+          </ClientOnly>
       </Card>
     </div>
   );
