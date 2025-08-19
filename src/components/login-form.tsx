@@ -33,11 +33,14 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
        }
        // In a real app, you'd also check the password
        setError(null);
+       localStorage.setItem('user', JSON.stringify(user));
+
        if (user.role === 'recruiter') {
          router.push('/dashboard');
        } else {
          router.push('/home');
        }
+       router.refresh(); // Refresh to update header state
     } else {
       setError("No account found with that email. Please create an account.");
     }

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import type { User } from "@/lib/types";
 
 export default function SignupForm() {
     const [email, setEmail] = useState('');
@@ -21,9 +22,17 @@ export default function SignupForm() {
         // 1. Call a server action to create the user in the database.
         // 2. Handle potential errors (e.g., email already exists).
         // 3. Log the user in and redirect.
-        console.log('New user created (simulation):', { name, email });
+        const newUser: User = {
+          id: `user_${Date.now()}`,
+          name,
+          email,
+          role: 'recruiter'
+        }
+        console.log('New user created (simulation):', newUser);
+        localStorage.setItem('user', JSON.stringify(newUser));
         // For this demo, we'll just redirect to the dashboard to simulate auto-login.
         router.push('/dashboard');
+        router.refresh();
     };
 
   return (
