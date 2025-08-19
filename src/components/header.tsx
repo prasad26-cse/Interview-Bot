@@ -14,8 +14,6 @@ export default function Header() {
   const router = useRouter();
 
   useEffect(() => {
-    // This is a simple way to check for a logged-in user in a mock setup.
-    // In a real app with Supabase/Firebase, this would involve onAuthStateChange.
     try {
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
@@ -31,8 +29,6 @@ export default function Header() {
   const handleLogout = async () => {
     localStorage.removeItem('user');
     setUser(null);
-    router.push('/');
-    // Use window.location to force a full refresh, ensuring all state is cleared.
     window.location.href = '/';
   };
   
@@ -76,6 +72,9 @@ export default function Header() {
             </>
           ) : (
             <>
+               <Button asChild disabled>
+                <Link href="/start">Start Interview</Link>
+               </Button>
                <Button asChild>
                 <Link href="/login">Recruiter Login</Link>
               </Button>

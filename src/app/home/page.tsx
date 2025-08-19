@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Briefcase, Cpu, FileText, Bot, MoveRight } from 'lucide-react';
@@ -47,10 +48,15 @@ export default function HomePage() {
                   </p>
                 </div>
                 <div className="flex flex-col gap-4 min-[400px]:flex-row">
-                  <Button asChild size="lg" className="group">
-                    <Link href="/start">
-                      Start Interview
+                  <Button asChild size="lg">
+                    <Link href="/">
+                      Candidate Login/Sign Up
                       <MoveRight className="ml-2 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  </Button>
+                   <Button asChild size="lg" variant="secondary">
+                    <Link href="/login">
+                      Recruiter Login/Sign Up
                     </Link>
                   </Button>
                 </div>
