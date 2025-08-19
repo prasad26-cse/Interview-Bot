@@ -16,7 +16,7 @@ export default function LoginPage() {
               Enter your credentials to access the dashboard
             </CardDescription>
           </CardHeader>
-          <LoginForm />
+          <LoginForm recruiterOnly={true} />
       </Card>
     </div>
   );

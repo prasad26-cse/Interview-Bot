@@ -12,7 +12,11 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-export default function LoginForm() {
+interface LoginFormProps {
+  recruiterOnly?: boolean;
+}
+
+export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -20,14 +24,22 @@ export default function LoginForm() {
 
   const handleLogin = (e: FormEvent) => {
     e.preventDefault();
-    const user = users.find(u => u.email === email && u.role === 'recruiter');
+    const user = users.find(u => u.email === email);
 
     if (user) {
-      // In a real app, you'd also check the password
-      setError(null);
-      router.push('/dashboard');
+       if (recruiterOnly && user.role !== 'recruiter') {
+        setError("This login is for recruiters only.");
+        return;
+       }
+       // In a real app, you'd also check the password
+       setError(null);
+       if (user.role === 'recruiter') {
+         router.push('/dashboard');
+       } else {
+         router.push('/home');
+       }
     } else {
-      setError("No recruiter account found with that email. Please create an account.");
+      setError("No account found with that email. Please create an account.");
     }
   };
 
@@ -46,7 +58,7 @@ export default function LoginForm() {
           <Input 
             id="email" 
             type="email" 
-            placeholder="recruiter@example.com" 
+            placeholder="user@example.com" 
             required 
             value={email}
             onChange={(e) => setEmail(e.target.value)}
