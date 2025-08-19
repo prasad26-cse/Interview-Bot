@@ -94,10 +94,10 @@ export default function DashboardClient({ interviews: initialInterviews, allRole
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
+          <TableBody>
             {filteredInterviews.length > 0 ? (
               filteredInterviews.map((interview) => (
-                <TableBody key={interview.id} asChild>
-                  <Collapsible asChild open={openCollapsibles[interview.id] || false} onOpenChange={() => toggleCollapsible(interview.id)} tagName="tbody">
+                  <Collapsible asChild key={interview.id} open={openCollapsibles[interview.id] || false} onOpenChange={() => toggleCollapsible(interview.id)} tagName="tbody">
                   <React.Fragment>
                   <TableRow className="cursor-pointer">
                     <TableCell>
@@ -178,17 +178,15 @@ export default function DashboardClient({ interviews: initialInterviews, allRole
                   </CollapsibleContent>
                   </React.Fragment>
                   </Collapsible>
-                </TableBody>
               ))
             ) : (
-              <TableBody>
                 <TableRow>
                   <TableCell colSpan={7} className="text-center h-24">
                     No interviews found.
                   </TableCell>
                 </TableRow>
-              </TableBody>
             )}
+            </TableBody>
         </Table>
       </div>
     </div>
