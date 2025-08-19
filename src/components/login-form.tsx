@@ -44,7 +44,7 @@ export default function LoginForm({ recruiterOnly }: LoginFormProps) {
     }
 
     localStorage.setItem('user', JSON.stringify(user));
-    router.push('/home');
+    router.push(recruiterOnly ? '/dashboard' : '/home');
     router.refresh();
     
     setLoading(false);
