@@ -6,7 +6,7 @@ const firebaseConfig = {
   projectId: "ai-video-interviewer",
   appId: "1:599352153384:web:945760f13cac8e7676ac1d",
   storageBucket: "ai-video-interviewer.firebasestorage.app",
-  apiKey: "AIzaSyAiy6RQpmR3FFKA9rPwx3lPKkDEPaRrf4g",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: "ai-video-interviewer.firebaseapp.com",
   measurementId: "",
   messagingSenderId: "599352153384",

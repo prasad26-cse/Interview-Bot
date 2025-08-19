@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { AlertTriangle } from "lucide-react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 
@@ -41,7 +41,17 @@ export default function RecruiterSignupForm() {
 
             router.push('/dashboard');
         } catch (error: any) {
-            setError(error.message);
+            if (error.code === 'auth/email-already-in-use') {
+                setError('This email is already in use. Please use a different email.');
+            } else if (error.code === 'auth/weak-password') {
+                setError('The password is too weak. Please use a stronger password.');
+            } else {
+                setError(error.message);
+            }
+             // If user was created but firestore failed, sign out to prevent inconsistent state
+            if (auth.currentUser) {
+                await signOut(auth);
+            }
         } finally {
             setLoading(false);
         }
