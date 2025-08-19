@@ -1,6 +1,7 @@
 
 "use client";
 
+import * as React from 'react';
 import { useState, useMemo, useEffect } from 'react';
 import type { FullInterview, Role } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
