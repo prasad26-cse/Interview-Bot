@@ -59,12 +59,16 @@ export default function Header() {
         <div className="flex flex-1 items-center justify-end space-x-4">
           {isLoggedIn ? (
             <>
-              <Button asChild>
-                <Link href="/start">Start Interview</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/dashboard">Dashboard</Link>
-              </Button>
+              {user.role === 'candidate' && (
+                <Button asChild>
+                  <Link href="/start">Start Interview</Link>
+                </Button>
+              )}
+               {user.role === 'recruiter' && (
+                <Button asChild variant="outline">
+                  <Link href="/dashboard">Dashboard</Link>
+                </Button>
+               )}
               <Button onClick={handleLogout} variant="ghost" size="icon">
                 <LogOut />
                 <span className="sr-only">Logout</span>
@@ -72,9 +76,6 @@ export default function Header() {
             </>
           ) : (
             <>
-              <Button asChild variant="outline">
-                <Link href="/">Login</Link>
-              </Button>
                <Button asChild>
                 <Link href="/login">Recruiter Login</Link>
               </Button>

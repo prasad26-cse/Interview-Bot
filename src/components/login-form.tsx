@@ -37,7 +37,7 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
     }
 
     if (recruiterOnly && user.role !== 'recruiter') {
-      setError("This login is for recruiters only.");
+      setError("This login is for recruiters only. Please use the candidate login page.");
     } else if (!recruiterOnly && user.role === 'recruiter') {
       setError("This login is for candidates. Please use the recruiter login page.");
     } else {
@@ -50,6 +50,8 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
   };
 
   const signupLink = recruiterOnly ? "/signup/recruiter" : "/signup/candidate";
+  const loginPageLink = recruiterOnly ? "/" : "/login";
+  const otherLoginLabel = recruiterOnly ? "Candidate" : "Recruiter";
 
   return (
     <form onSubmit={handleLogin}>
@@ -66,7 +68,7 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
           <Input 
             id="email" 
             type="email" 
-            placeholder={recruiterOnly ? "recruiter@example.com" : "user@example.com"}
+            placeholder={recruiterOnly ? "recruiter@example.com" : "candidate@example.com"}
             required 
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -77,7 +79,8 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
           <Label htmlFor="password">Password</Label>
           <Input 
             id="password" 
-            type="password" 
+            type="password"
+            placeholder="••••••••" 
             required 
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -89,12 +92,20 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </Button>
-        <p className="text-sm text-muted-foreground">
-          Don't have an account?{" "}
-          <Link href={signupLink} className="text-primary hover:underline">
-            Create one
-          </Link>
-        </p>
+        <div className="text-center text-sm text-muted-foreground">
+          <p>
+            Don't have an account?{" "}
+            <Link href={signupLink} className="text-primary hover:underline">
+              Create one
+            </Link>
+          </p>
+          <p>
+             Are you a {otherLoginLabel}?{" "}
+             <Link href={loginPageLink} className="text-primary hover:underline">
+                Login here
+            </Link>
+          </p>
+        </div>
       </CardFooter>
     </form>
   );

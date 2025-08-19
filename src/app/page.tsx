@@ -4,7 +4,7 @@ import { User } from "lucide-react";
 import LoginForm from "@/components/login-form";
 import ClientOnly from "@/components/client-only";
 
-export default function LoginPage() {
+export default function CandidateLoginPage() {
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-56px)] bg-gray-50 dark:bg-gray-900/50 p-4">
       <Card className="w-full max-w-sm mx-auto shadow-2xl">
