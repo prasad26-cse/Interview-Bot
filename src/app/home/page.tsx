@@ -49,14 +49,13 @@ export default function HomePage() {
                 </div>
                 <div className="flex flex-col gap-4 min-[400px]:flex-row">
                   <Button asChild size="lg">
-                    <Link href="/">
-                      Candidate Login/Sign Up
-                      <MoveRight className="ml-2 transition-transform group-hover:translate-x-1" />
+                    <Link href="/login/candidate">
+                      Candidate Login
                     </Link>
                   </Button>
                    <Button asChild size="lg" variant="secondary">
-                    <Link href="/login">
-                      Recruiter Login/Sign Up
+                    <Link href="/login/recruiter">
+                      Recruiter Login
                     </Link>
                   </Button>
                 </div>

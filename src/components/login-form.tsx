@@ -13,10 +13,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { users } from "@/lib/data";
 
 interface LoginFormProps {
-  recruiterOnly?: boolean;
+  recruiterOnly: boolean;
 }
 
-export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
+export default function LoginForm({ recruiterOnly }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -36,22 +36,21 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
         return;
     }
 
-    if (recruiterOnly && user.role !== 'recruiter') {
-      setError("This login is for recruiters only. Please use the candidate login page.");
-    } else if (!recruiterOnly && user.role === 'recruiter') {
-      setError("This login is for candidates. Please use the recruiter login page.");
-    } else {
-      localStorage.setItem('user', JSON.stringify(user));
-      router.push('/home');
-      router.refresh();
+    const expectedRole = recruiterOnly ? 'recruiter' : 'candidate';
+    if (user.role !== expectedRole) {
+        setError("Invalid credentials for this login page.");
+        setLoading(false);
+        return;
     }
+
+    localStorage.setItem('user', JSON.stringify(user));
+    router.push('/home');
+    router.refresh();
     
     setLoading(false);
   };
 
   const signupLink = recruiterOnly ? "/signup/recruiter" : "/signup/candidate";
-  const loginPageLink = recruiterOnly ? "/" : "/login";
-  const otherLoginLabel = recruiterOnly ? "Candidate" : "Recruiter";
 
   return (
     <form onSubmit={handleLogin}>
@@ -97,12 +96,6 @@ export default function LoginForm({ recruiterOnly = false }: LoginFormProps) {
             Don't have an account?{" "}
             <Link href={signupLink} className="text-primary hover:underline">
               Create one
-            </Link>
-          </p>
-          <p>
-             Are you a {otherLoginLabel}?{" "}
-             <Link href={loginPageLink} className="text-primary hover:underline">
-                Login here
             </Link>
           </p>
         </div>

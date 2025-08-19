@@ -1,5 +1,4 @@
 
-
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { User } from "lucide-react";
 import LoginForm from "@/components/login-form";
@@ -19,7 +18,7 @@ export default function CandidateLoginPage() {
             </CardDescription>
           </CardHeader>
           <ClientOnly>
-            <LoginForm recruiterOnly={false}/>
+            <LoginForm recruiterOnly={false} />
           </ClientOnly>
       </Card>
     </div>

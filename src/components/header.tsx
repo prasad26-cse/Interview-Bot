@@ -76,7 +76,7 @@ export default function Header() {
                 <Link href="/start">Start Interview</Link>
                </Button>
                <Button asChild>
-                <Link href="/login">Recruiter Login</Link>
+                <Link href="/login/recruiter">Recruiter Login</Link>
               </Button>
             </>
           )}
