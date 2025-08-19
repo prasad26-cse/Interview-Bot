@@ -79,7 +79,10 @@ export default function InterviewPlayer({ interviewData }: InterviewPlayerProps)
               </div>
 
               <div className="lg:w-1/2">
-                <VideoRec onSubmit={handleVideoSubmit} />
+                <VideoRec 
+                  key={currentStep}
+                  onSubmit={handleVideoSubmit} 
+                />
               </div>
             </div>
           )}
