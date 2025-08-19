@@ -57,11 +57,11 @@ export default function Home() {
                 </div>
               </div>
               <Image
-                src="https://placehold.co/600x400/3b82f6/ffffff.png"
+                src="https://placehold.co/600x400.png"
                 width="600"
                 height="400"
                 alt="AI Interviewer Bot"
-                data-ai-hint="AI assistant"
+                data-ai-hint="interview robot"
                 className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
                 priority
               />
@@ -79,7 +79,7 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-2 pt-12">
+            <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 pt-12">
               {features.map((feature) => (
                 <Card key={feature.title} className="hover:shadow-lg transition-shadow duration-300">
                   <CardHeader className="flex flex-row items-center gap-4">
