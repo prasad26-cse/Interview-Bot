@@ -97,7 +97,7 @@ export default function DashboardClient({ interviews: initialInterviews, allRole
           <TableBody>
             {filteredInterviews.length > 0 ? (
               filteredInterviews.map((interview) => (
-                <Collapsible asChild key={interview.id} open={openCollapsibles[interview.id] || false} onOpenChange={() => toggleCollapsible(interview.id)}>
+                <Collapsible asChild key={interview.id} open={openCollapsibles[interview.id] || false} onOpenChange={() => toggleCollapsible(interview.id)} tagName="tbody">
                 <React.Fragment>
                 <TableRow className="cursor-pointer">
                   <TableCell>
