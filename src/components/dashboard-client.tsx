@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -8,13 +9,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Link from 'next/link';
-import { Eye } from 'lucide-react';
+import { Eye, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 
 interface DashboardClientProps {
   interviews: Interview[];
 }
 
-export default function DashboardClient({ interviews }: DashboardClientProps) {
+export default function DashboardClient({ interviews: initialInterviews }: DashboardClientProps) {
+  const [interviews, setInterviews] = useState(initialInterviews);
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -27,6 +30,11 @@ export default function DashboardClient({ interviews }: DashboardClientProps) {
   }, [interviews, roleFilter, statusFilter]);
   
   const getRoleTitle = (roleId: string) => roles.find(r => r.id === roleId)?.title || 'Unknown Role';
+
+  const handleDelete = (interviewId: string) => {
+    // In a real app, you'd call a server action to delete from the DB
+    setInterviews(interviews.filter(i => i.id !== interviewId));
+  };
 
   return (
     <div>
@@ -87,6 +95,32 @@ export default function DashboardClient({ interviews }: DashboardClientProps) {
                         <Eye className="h-4 w-4" />
                       </Link>
                     </Button>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the interview record for {interview.candidate.name}.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(interview.id)}
+                            className="bg-destructive hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
                   </TableCell>
                 </TableRow>
               ))
