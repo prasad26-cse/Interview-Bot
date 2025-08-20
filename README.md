@@ -112,6 +112,8 @@ The project is pre-configured to use [Prisma](https://www.prisma.io/), making it
 
 ```
 .
+├── Backend/
+└── NodeJs/
 ├── prisma/             # Prisma schema for database models
 ├── public/             # Static assets
 └── src/
